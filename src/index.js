@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
+const { checkString } = require('./util');
 const {
   find,
   findOne,
@@ -12,9 +13,30 @@ const {
 
 class Resource {
   /**
+   * Format an endpoint to make sure it matches correct standards.
+   */
+  static formatEndpoint([id, { path, method, handler, activate = [] }]) {
+    checkString(id, { message: 'Endpoint id was not passed in as a string.' });
+    checkString(path, { message: 'Endpoint path was not passed in as a string.' });
+    checkString(method, { message: 'Endpoint method was not passed in as a string.' });
+    if (typeof handler !== 'function') {
+      throw new Error('Endpoint handler must be a function.');
+    }
+    if (!Array.isArray(activate)) {
+      throw new Error('Endpoint activate must be an array of functions.');
+    }
+    return [id, {
+      path,
+      method: lowerCase(method),
+      handler,
+      activate,
+    }];
+  }
+
+  /**
    * Setup the initial resource.
    */
-  constructor(resourceName, schema) {
+  constructor(resourceName, schema, { endpoints = new Map() } = {}) {
     if (typeof resourceName !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
@@ -24,7 +46,10 @@ class Resource {
     this.resourceName = camelCase(singular(resourceName));
     this.modelName = pascalCase(this.resourceName);
     this.schema = schema;
-    this.endpoints = this.defaults;
+    this.endpoints = new Map([
+      ...this.defaults.entries(),
+      ...endpoints.entries(),
+    ].map(Resource.formatEndpoint));
   }
 
   /**
@@ -104,13 +129,18 @@ class Resource {
       handler,
       activate,
     }) => {
-      const middleware = call => (req, res, next) => call({ req, res, next, model });
+      const middleware = call => (req, res, next) => call({ req, res, next, model })
+        .catch(e => res.send({ error: e.message }));
       router[lowerCase(method)](
         path,
         ...activate.map(middleware),
         async (req, res, next) => {
-          const data = await handler({ req, res, next, model });
-          res.send(data);
+          try {
+            const data = await handler({ req, res, next, model });
+            res.send(data);
+          } catch (e) {
+            res.send({ error: e.message });
+          }
         },
       );
     });
