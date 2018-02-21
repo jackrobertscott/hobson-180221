@@ -13,9 +13,6 @@ module.exports.find = function find(name) {
     const { filter } = req.query;
     const value = await model.find(filter ? decodeURIComponent(filter) : {});
     checkExists(value);
-    if (!value) {
-      throw new Error('There was an error getting items from server.');
-    }
     return {
       [plural(name)]: value,
     };
