@@ -105,6 +105,17 @@ class Resource {
     return routes;
   }
 
+  addMiddleware(root, id, middleware) {
+    const label = root ? this.localise(id) : id;
+    const update = this.endpoints.get(label);
+    if (update) {
+      update.activate.push(middleware);
+      this.endpoints.set(label, update);
+    } else {
+      throw new Error('There is no existing route with the id provided.');
+    }
+  }
+
   /**
    * Create a model specific id.
    */
