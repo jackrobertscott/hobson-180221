@@ -1,0 +1,45 @@
+{
+  "name": "express-sleep",
+  "version": "0.1.0",
+  "description": "Convention over configuration approach to RESTful endpoints using express.",
+  "main": "src/index.js",
+  "engines" : {
+    "node" : ">=7.6"
+  },
+  "scripts": {
+    "test": "ava",
+    "test:watch": "npm run test -- --watch",
+    "release": "np",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackrobertscott/express-sleep.git"
+  },
+  "keywords": [
+    "express",
+    "rest",
+    "restful",
+    "boilerplate",
+    "starter",
+    "mongoose"
+  ],
+  "author": "Jack Scott <jack.rob.scott@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jackrobertscott/express-sleep/issues"
+  },
+  "homepage": "https://github.com/jackrobertscott/express-sleep#readme",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "eslint": "^4.18.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0",
+    "np": "^2.20.1"
+  },
+  "dependencies": {
+    "express": "^4.16.2"
+  }
+}
