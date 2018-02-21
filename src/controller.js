@@ -30,7 +30,6 @@ module.exports.find = function find(name) {
 module.exports.findOne = function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
   return async ({ req, model }) => {
-    console.log(`${name}Id`);
     const id = req.params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
