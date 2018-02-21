@@ -54,25 +54,25 @@ class Resource {
         activate: [],
       })
       .set(this.localise('findOne'), {
-        path: '/:messageId',
+        path: `/:${this.resourceName}Id`,
         method: 'get',
         handler: findOne(this.resourceName),
         activate: [],
       })
       .set(this.localise('create'), {
-        path: '/:messageId',
+        path: '/',
         method: 'post',
         handler: create(this.resourceName),
         activate: [],
       })
       .set(this.localise('update'), {
-        path: '/:messageId',
+        path: `/:${this.resourceName}Id`,
         method: 'patch',
         handler: update(this.resourceName),
         activate: [],
       })
       .set(this.localise('remove'), {
-        path: '/:messageId',
+        path: `/:${this.resourceName}Id`,
         method: 'delete',
         handler: remove(this.resourceName),
         activate: [],
@@ -104,15 +104,18 @@ class Resource {
       handler,
       activate,
     }) => {
-      const middleware = call => (...args) => call({ ...args, model });
+      const middleware = call => (req, res, next) => call({ req, res, next, model });
       router[lowerCase(method)](
         path,
         ...activate.map(middleware),
-        middleware(handler),
+        async (req, res, next) => {
+          const data = await handler({ req, res, next, model });
+          res.send(data);
+        },
       );
     });
     app.use(`/${this.manyName}`, router);
   }
 }
 
-export default Resource;
+module.exports = Resource;

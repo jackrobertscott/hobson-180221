@@ -7,11 +7,11 @@ const { checkString, checkObjectId, checkExists } = require('./util');
  *
  * @param {string} name the resource name
  */
-export function find(name) {
+module.exports.find = function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
   return async ({ req, model }) => {
-    const { where } = req.query;
-    const value = await model.find(decodeURIComponent(where));
+    const { filter } = req.query;
+    const value = await model.find(filter ? decodeURIComponent(filter) : {});
     checkExists(value);
     if (!value) {
       throw new Error('There was an error getting items from server.');
@@ -20,16 +20,17 @@ export function find(name) {
       [plural(name)]: value,
     };
   };
-}
+};
 
 /**
  * Find one item in the database by it's id.
  *
  * @param {string} name the resource name
  */
-export function findOne(name) {
+module.exports.findOne = function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
   return async ({ req, model }) => {
+    console.log(`${name}Id`);
     const id = req.params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
@@ -38,14 +39,14 @@ export function findOne(name) {
       [singular(name)]: value,
     };
   };
-}
+};
 
 /**
  * Create a resource item in the database.
  *
  * @param {string} name the resource name
  */
-export function create(name) {
+module.exports.create = function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
   return async ({ req, model }) => {
     const value = await model.create(req.body);
@@ -54,14 +55,14 @@ export function create(name) {
       [singular(name)]: value,
     };
   };
-}
+};
 
 /**
  * Update a resource item in the database.
  *
  * @param {string} name the resource name
  */
-export function update(name) {
+module.exports.update = function update(name) {
   checkString(name, { method: camelCase(`update${name}`) });
   return async ({ req, model }) => {
     const id = req.params[`${name}Id`];
@@ -73,14 +74,14 @@ export function update(name) {
       [singular(name)]: value,
     };
   };
-}
+};
 
 /**
  * Remove a resource from the database.
  *
  * @param {string} name the resource name
  */
-export function remove(name) {
+module.exports.remove = function remove(name) {
   checkString(name, { method: camelCase(`remove${name}`) });
   return async ({ req, model }) => {
     const id = req.params[`${name}Id`];
@@ -90,4 +91,4 @@ export function remove(name) {
       [singular(name)]: null,
     };
   };
-}
+};

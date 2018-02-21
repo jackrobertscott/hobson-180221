@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
+const exampleResource = require('./example/example.resource');
 
 const environment = process.env.NODE_ENV || 'development';
 const port = process.env.PORT || 3000;
@@ -33,6 +34,7 @@ app.use(cors({ origin: '*' }));
 app.enable('trust proxy');
 
 app.get('/', (req, res) => res.send({ hello: 'world' }));
+exampleResource.attach(app);
 
 // catch 404
 app.use((req, res, next) => {
