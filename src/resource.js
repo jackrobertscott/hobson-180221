@@ -55,6 +55,8 @@ class Resource {
       ...this.defaults.entries(),
       ...endpoints.entries(),
     ].map(Resource.formatEndpoint));
+    this.preHooks = new Map();
+    this.postHooks = new Map();
   }
 
   /**
@@ -134,6 +136,36 @@ class Resource {
   }
 
   /**
+   * Add a hook to an endpoint function.
+   */
+  addPreHook(id, hook) {
+    checkString(id, { method: 'addPreHook' });
+    if (typeof hook !== 'function') {
+      throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
+    }
+    let hooks = [];
+    if (this.preHooks.has(id)) {
+      hooks = this.preHooks.get(id);
+    }
+    this.preHooks.set(id, [...hooks, hook]);
+  }
+
+  /**
+   * Add a hook to an endpoint function.
+   */
+  addPostHook(id, hook) {
+    checkString(id, { method: 'addPostHook' });
+    if (typeof hook !== 'function') {
+      throw new Error(`Function not passed as "hook" parameter in addPostHook for "${id}".`);
+    }
+    let hooks = [];
+    if (this.postHooks.has(id)) {
+      hooks = this.postHooks.get(id);
+    }
+    this.postHooks.set(id, [...hooks, hook]);
+  }
+
+  /**
    * Attach this resource's routes to the application.
    *
    * @param {object} app the express application instance
@@ -154,9 +186,23 @@ class Resource {
       if (this.disable && this.disable.find(route => route === key)) {
         return; // don't add endpoint if it is disabled
       }
-      const resources = { model };
+      const resources = {
+        model,
+        context: {}, // empty object which can be used to pass information between middlewares
+      };
       const middleware = activate.map(middle => middlify(middle, resources));
-      const work = middlify(handler, resources, true);
+      const work = middlify(async (...args) => {
+        if (this.preHooks.has(key)) {
+          const tasks = this.preHooks.get(key).map(hook => hook(...args));
+          await Promise.all(tasks);
+        }
+        const data = await handler(...args);
+        if (this.postHooks.has(key)) {
+          const tasks = this.postHooks.get(key).map(hook => hook(...args));
+          await Promise.all(tasks);
+        }
+        return data;
+      }, resources, true);
       router[lowerCase(method)](path, ...middleware, work);
     });
     app.use(`/${this.manyName}`, router);
