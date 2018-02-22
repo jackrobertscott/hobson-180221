@@ -1,5 +1,5 @@
 const { Resource } = require('../../src/index');
-const exampleModel = require('./example.model');
+const exampleSchema = require('./example.schema');
 
 const endpoints = new Map();
 
@@ -17,7 +17,7 @@ endpoints.set('smackTalk', {
   }),
 });
 
-const example = new Resource('example', exampleModel, {
+const example = new Resource('example', exampleSchema, {
   endpoints,
 });
 

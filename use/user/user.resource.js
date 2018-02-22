@@ -1,4 +1,4 @@
 const { UserResource } = require('../../src/index');
-const userModel = require('./user.model');
+const userSchema = require('./user.schema');
 
-module.exports = new UserResource('user', userModel);
+module.exports = new UserResource('user', userSchema);
