@@ -153,8 +153,7 @@ class Resource {
         if (typeof route === 'string') {
           return this.localise(route) === key;
         }
-        const id = route.localise ? this.localise(route.id) : route.id;
-        return id === key;
+        return (route.localise ? this.localise(route.id) : route.id) === key;
       })) {
         return; // don't add endpoint if it is disabled
       }
