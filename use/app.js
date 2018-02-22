@@ -34,6 +34,7 @@ app.use(cors({ origin: '*' }));
 app.enable('trust proxy');
 
 app.get('/', (req, res) => res.send({ hello: 'world' }));
+
 exampleResource.attach(app);
 
 // catch 404

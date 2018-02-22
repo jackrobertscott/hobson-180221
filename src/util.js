@@ -28,3 +28,11 @@ module.exports.checkExists = function checkExists(value, { message } = {}) {
     throw new Error(message || 'No items were found for the given request.');
   }
 };
+
+/**
+ * Format middleware to match express infrastructure.
+ */
+module.exports.middlify = function middlify(middleware, options) {
+  return (req, res, next) => (async () => middleware({ req, res, next, ...options }))()
+    .catch(e => res.send({ error: e.message }));
+};

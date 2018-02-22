@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString } = require('./util');
+const { checkString, middlify } = require('./util');
 const {
   find,
   findOne,
@@ -157,19 +157,10 @@ class Resource {
       })) {
         return; // don't add endpoint if it is disabled
       }
-      const middleware = call => (req, res, next) => call({ req, res, next, model })
-        .catch(e => res.send({ error: e.message }));
       router[lowerCase(method)](
         path,
-        ...activate.map(middleware),
-        async (req, res, next) => {
-          try {
-            const data = await handler({ req, res, next, model });
-            res.send(data);
-          } catch (e) {
-            res.send({ error: e.message });
-          }
-        },
+        ...activate.map(middle => middlify(middle, { model })),
+        middlify(handler, { model }),
       );
     });
     app.use(`/${this.manyName}`, router);

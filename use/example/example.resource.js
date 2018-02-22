@@ -25,7 +25,7 @@ const example = new Resource('example', schema, {
   }, 'remove'],
 });
 
-example.addMiddleware('find', async () => {
+example.addMiddleware('find', () => {
   throw new Error('ZOO WEE MAMA!');
 });
 
