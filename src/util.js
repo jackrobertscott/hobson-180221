@@ -32,7 +32,16 @@ module.exports.checkExists = function checkExists(value, { message } = {}) {
 /**
  * Format middleware to match express infrastructure.
  */
-module.exports.middlify = function middlify(middleware, options) {
-  return (req, res, next) => (async () => middleware({ req, res, next, ...options }))()
-    .catch(e => res.send({ error: e.message }));
+module.exports.middlify = function middlify(middleware, resources, then = false) {
+  return (req, res, next) => (async () => middleware({ req, res, next, ...resources }))()
+    .then(data => then && res.send({
+      status: 'success',
+      code: 200,
+      data,
+    }))
+    .catch(error => res.send({
+      status: 'error',
+      code: 500,
+      error: error.message,
+    }));
 };

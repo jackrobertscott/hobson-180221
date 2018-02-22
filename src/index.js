@@ -76,31 +76,31 @@ class Resource {
   get defaults() {
     const routes = new Map();
     routes
-      .set(this.localise('find'), {
+      .set('find', {
         path: '/',
         method: 'get',
         handler: find(this.resourceName),
         activate: [],
       })
-      .set(this.localise('findOne'), {
+      .set('findOne', {
         path: `/:${this.resourceName}Id`,
         method: 'get',
         handler: findOne(this.resourceName),
         activate: [],
       })
-      .set(this.localise('create'), {
+      .set('create', {
         path: '/',
         method: 'post',
         handler: create(this.resourceName),
         activate: [],
       })
-      .set(this.localise('update'), {
+      .set('update', {
         path: `/:${this.resourceName}Id`,
         method: 'patch',
         handler: update(this.resourceName),
         activate: [],
       })
-      .set(this.localise('remove'), {
+      .set('remove', {
         path: `/:${this.resourceName}Id`,
         method: 'delete',
         handler: remove(this.resourceName),
@@ -115,21 +115,13 @@ class Resource {
    * @param {string} id the id of the endpoint to apply the middleware
    * @param {function} middleware the middleware function
    */
-  addMiddleware(id, middleware, { localise = true, start = false } = {}) {
-    const key = localise ? this.localise(id) : id;
-    if (!this.endpoints.has(key)) {
+  addMiddleware(id, middleware, { start = false } = {}) {
+    if (!this.endpoints.has(id)) {
       throw new Error('There is no existing route with the id provided.');
     }
-    const endpoint = this.endpoints.get(key);
+    const endpoint = this.endpoints.get(id);
     endpoint.activate = start ? [middleware, ...endpoint.activate] : [...endpoint.activate, middleware];
-    this.endpoints.set(key, endpoint);
-  }
-
-  /**
-   * Create a model specific id.
-   */
-  localise(id) {
-    return camelCase(`${this.singleName} ${id}`);
+    this.endpoints.set(id, endpoint);
   }
 
   /**
@@ -149,19 +141,13 @@ class Resource {
       handler,
       activate,
     }, key) => {
-      if (this.disable && this.disable.find((route) => {
-        if (typeof route === 'string') {
-          return this.localise(route) === key;
-        }
-        return (route.localise ? this.localise(route.id) : route.id) === key;
-      })) {
+      if (this.disable && this.disable.find(route => route === key)) {
         return; // don't add endpoint if it is disabled
       }
-      router[lowerCase(method)](
-        path,
-        ...activate.map(middle => middlify(middle, { model })),
-        middlify(handler, { model }),
-      );
+      const resources = { model };
+      const middleware = activate.map(middle => middlify(middle, resources));
+      const work = middlify(handler, resources, true);
+      router[lowerCase(method)](path, ...middleware, work);
     });
     app.use(`/${this.manyName}`, router);
   }
