@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
+const chalk = require('chalk');
 const exampleResource = require('./example/example.resource');
 
 const environment = process.env.NODE_ENV || 'development';
@@ -57,4 +58,5 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(port, () => console.log(`server started on port ${port} (${environment})`));
+const { log } = console;
+app.listen(port, () => log(`server started on port ${chalk.cyan(port)} (${chalk.magenta(environment)})`));
