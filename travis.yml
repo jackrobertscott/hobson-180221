@@ -2,5 +2,9 @@ language: node_js
 node_js:
   - "iojs"
   - "7"
-  - "8"
-  - "9"
+services:
+  - mongodb
+notifications:
+  email:
+    on_success: change # default: change
+    on_failure: change # default: always
