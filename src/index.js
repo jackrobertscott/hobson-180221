@@ -36,7 +36,7 @@ class Resource {
   /**
    * Setup the initial resource.
    */
-  constructor(resourceName, schema, { endpoints = new Map() } = {}) {
+  constructor(resourceName, schema, { endpoints = new Map() } = {}, options = ['find', 'findOne', 'create', 'update', 'remove']) {
     if (typeof resourceName !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
@@ -46,6 +46,7 @@ class Resource {
     this.resourceName = camelCase(singular(resourceName));
     this.modelName = pascalCase(this.resourceName);
     this.schema = schema;
+    this.options = options;
     this.endpoints = new Map([
       ...this.defaults.entries(),
       ...endpoints.entries(),
@@ -71,37 +72,36 @@ class Resource {
    */
   get defaults() {
     const routes = new Map();
-    routes
-      .set(this.localise('find'), {
-        path: '/',
-        method: 'get',
-        handler: find(this.resourceName),
-        activate: [],
-      })
-      .set(this.localise('findOne'), {
-        path: `/:${this.resourceName}Id`,
-        method: 'get',
-        handler: findOne(this.resourceName),
-        activate: [],
-      })
-      .set(this.localise('create'), {
-        path: '/',
-        method: 'post',
-        handler: create(this.resourceName),
-        activate: [],
-      })
-      .set(this.localise('update'), {
-        path: `/:${this.resourceName}Id`,
-        method: 'patch',
-        handler: update(this.resourceName),
-        activate: [],
-      })
-      .set(this.localise('remove'), {
-        path: `/:${this.resourceName}Id`,
-        method: 'delete',
-        handler: remove(this.resourceName),
-        activate: [],
-      });
+    if (this.options.filter((option) => option === 'find').length > 0) routes.set(this.localise('find'), {
+      path: '/',
+      method: 'get',
+      handler: find(this.resourceName),
+      activate: [],
+    });
+    if (this.options.filter((option) => option === 'findOne').length > 0) routes.set(this.localise('findOne'), {
+      path: `/:${this.resourceName}Id`,
+      method: 'get',
+      handler: findOne(this.resourceName),
+      activate: [],
+    })
+    if (this.options.filter((option) => option === 'create').length > 0) routes.set(this.localise('create'), {
+      path: '/',
+      method: 'post',
+      handler: create(this.resourceName),
+      activate: [],
+    })
+    if (this.options.filter((option) => option === 'update').length > 0) routes.set(this.localise('update'), {
+      path: `/:${this.resourceName}Id`,
+      method: 'patch',
+      handler: update(this.resourceName),
+      activate: [],
+    })
+    if (this.options.filter((option) => option === 'remove').length > 0) routes.set(this.localise('remove'), {
+      path: `/:${this.resourceName}Id`,
+      method: 'delete',
+      handler: remove(this.resourceName),
+      activate: [],
+    });
     return routes;
   }
 
