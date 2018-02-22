@@ -1,5 +1,5 @@
 const Resource = require('../../src/index');
-const schema = require('./example.schema');
+const exampleModel = require('./example.model');
 
 const endpoints = new Map();
 
@@ -17,9 +17,8 @@ endpoints.set('smackTalk', {
   }),
 });
 
-const example = new Resource('example', schema, {
+const example = new Resource('example', exampleModel, {
   endpoints,
-  disable: ['remove'],
 });
 
 example.addMiddleware('smackTalk', () => {

@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
 const { Router } = require('express');
-const { camelCase, lowerCase, pascalCase } = require('change-case');
+const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
 const { checkString, middlify } = require('./util');
 const {
@@ -36,19 +35,18 @@ class Resource {
   /**
    * Setup the initial resource.
    */
-  constructor(resourceName, schema, { endpoints = new Map(), disable = [] } = {}) {
+  constructor(resourceName, model, { endpoints = new Map(), disable = [] } = {}) {
     if (typeof resourceName !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
-    if (typeof schema !== 'object') {
-      throw new Error('Parameter "schema" must be given to the Resource constructor as mongoose model.');
+    if (typeof model !== 'function') {
+      throw new Error('Parameter "model" must be given to the Resource constructor as mongoose model.');
     }
     if (!Array.isArray(disable)) {
       throw new Error('Parameter "options.disable" must be given to the Resource constructor as an array.');
     }
     this.resourceName = camelCase(singular(resourceName));
-    this.modelName = pascalCase(this.resourceName);
-    this.schema = schema;
+    this.model = model;
     this.disable = disable;
     this.endpoints = new Map([
       ...this.defaults.entries(),
@@ -133,7 +131,6 @@ class Resource {
     if (!app) {
       throw new Error('Parameter "app" must be given to the Resource constructor as mongoose model.');
     }
-    const model = mongoose.model(this.modelName, this.schema);
     const router = Router();
     this.endpoints.forEach(({
       path,
@@ -144,7 +141,7 @@ class Resource {
       if (this.disable && this.disable.find(route => route === key)) {
         return; // don't add endpoint if it is disabled
       }
-      const resources = { model };
+      const resources = { model: this.model };
       const middleware = activate.map(middle => middlify(middle, resources));
       const work = middlify(handler, resources, true);
       router[lowerCase(method)](path, ...middleware, work);
