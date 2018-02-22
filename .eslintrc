@@ -3,5 +3,9 @@
 	"rules": {
 		"object-curly-newline": "off",
 		"max-len": "off"
+	},
+	"env": {
+		"node": true,
+		"mocha": true
 	}
 }
