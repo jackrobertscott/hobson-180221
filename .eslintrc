@@ -1,6 +1,12 @@
 {
 	"extends": "airbnb",
 	"rules": {
-		"object-curly-newline": "off"
+		"object-curly-newline": "off",
+		"max-len": "off",
+		"padded-blocks": "off"
+	},
+	"env": {
+		"node": true,
+		"mocha": true
 	}
 }

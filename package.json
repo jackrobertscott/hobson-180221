@@ -7,10 +7,10 @@
     "node": ">=7.6"
   },
   "scripts": {
-    "test": "ava",
+    "test": "mocha",
     "test:watch": "npm run test -- --watch",
     "release": "np",
-    "dev": "NODE_ENV=development nodemon use/app.js --watch src --watch use"
+    "dev": "NODE_ENV=development nodemon use/index.js --watch src --watch use"
   },
   "repository": {
     "type": "git",
@@ -31,17 +31,20 @@
   },
   "homepage": "https://github.com/jackrobertscott/express-sleep#readme",
   "devDependencies": {
-    "ava": "^0.25.0",
+    "chai": "^4.1.2",
     "eslint": "^4.18.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
+    "mocha": "^5.0.1",
     "nodemon": "^1.15.1",
-    "np": "^2.20.1"
+    "np": "^2.20.1",
+    "supertest": "^3.0.0"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
+    "chalk": "^2.3.1",
     "change-case": "^3.0.1",
     "compression": "^1.7.2",
     "cookie-parser": "^1.4.3",

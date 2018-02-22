@@ -1,4 +1,5 @@
 # express-sleep
+[![Build Status](https://travis-ci.org/jackrobertscott/express-sleep.svg?branch=master)](https://travis-ci.org/jackrobertscott/express-sleep)
 
 Convention over configuration approach to RESTful endpoints using express.
 
@@ -99,3 +100,55 @@ access
 
 const messageResource = new Resource('message', messageSchema, { access });
 ```
+
+## Endpoint Standards
+
+Endpoints should return information is a specific format that is easy to read on the client.
+
+**Success**
+
+```json
+{
+  "status": "success",
+  "code": "200",
+  "data": {
+    "messages": [{
+      "_id": "110297391319273",
+      "content": "This is a good message.",
+    }, {
+      "_id": "110297391319273",
+      "content": "This is another message.",
+    }],
+  }
+}
+```
+
+**Failed**
+
+```json
+{
+  "status": "failed",
+  "code": "400",
+  "data": {
+    "tite": [{
+      "type": "required",
+      "message": "The title field is required.",
+    }, {
+      "type": "maxLength",
+      "message": "The title field must be less than 20 charaters.",
+    }],
+  }
+}
+```
+
+**Error**
+
+```json
+{
+  "status": "errored",
+  "code": "500",
+  "message": "The server pooped itself."
+}
+```
+
+

@@ -1,4 +1,5 @@
 const { Types } = require('mongoose');
+const HTTPStatus = require('http-status');
 
 const { ObjectId } = Types;
 
@@ -16,7 +17,9 @@ module.exports.checkString = function checkString(chars, { method, message } = {
  */
 module.exports.checkObjectId = function checkObjectId(id, { message } = {}) {
   if (!id || !ObjectId.isValid(id)) {
-    throw new Error(message || 'Request did not contain a valid id.');
+    const error = new Error(message || 'Request did not contain a valid id.');
+    error.code = HTTPStatus.BAD_REQUEST;
+    throw error;
   }
 };
 
@@ -25,6 +28,35 @@ module.exports.checkObjectId = function checkObjectId(id, { message } = {}) {
  */
 module.exports.checkExists = function checkExists(value, { message } = {}) {
   if (!value) {
-    throw new Error(message || 'No items were found for the given request.');
+    const error = new Error(message || 'No items were found for the given request.');
+    error.code = HTTPStatus.NOT_FOUND;
+    throw error;
   }
+};
+
+/**
+ * Format response.
+ */
+module.exports.formatResponse = function formatResponse(data) {
+  if (data instanceof Error) {
+    return {
+      status: 'error',
+      code: data.code || 500,
+      error: data.message || 'There was an error on the server.',
+    };
+  }
+  return {
+    status: 'success',
+    code: 200,
+    data,
+  };
+};
+
+/**
+ * Format middleware to match express infrastructure.
+ */
+module.exports.middlify = function middlify(middleware, resources, end = false) {
+  return (req, res, next) => (async () => middleware({ req, res, next, ...resources }))()
+    .then(data => end && res.status(200).json(module.exports.formatResponse(data)))
+    .catch(error => res.status(error.code || 500).json(module.exports.formatResponse(error)));
 };
