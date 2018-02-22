@@ -142,7 +142,7 @@ class Resource {
    * @param {array} endpoint.activate middleware called before the handler function is invoked
    */
   addEndpoint(id, endpoint) {
-    checkString(id, { message: `Endpoint id (${id}) was not passed in as a string.` });
+    checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
     if (typeof endpoint !== 'object') {
       throw new Error(`Endpoint data for ${id} must be an object.`);
     }
