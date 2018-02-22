@@ -1,4 +1,4 @@
-const Resource = require('../../src/index');
+const { Resource } = require('../../src/index');
 const exampleModel = require('./example.model');
 
 const endpoints = new Map();
