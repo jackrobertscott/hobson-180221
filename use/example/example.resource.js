@@ -9,7 +9,7 @@ endpoints.set('smacktalk', {
   handler: async () => ({ talk: ['Yo mama!', 'Have 5 entries, or what!', 'Mwahahah word.', 'Blah', 'Hello! Smelly.'][Math.floor(Math.random() * 5)] }),
 });
 
-const example = new Resource('example', schema, { endpoints });
+const example = new Resource('example', schema, { endpoints }, ['findOne']);
 
 example.addMiddleware(true, 'find', async () => { throw new Error('ZOO WEE MAMA!') });
 
