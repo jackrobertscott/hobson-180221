@@ -36,17 +36,20 @@ class Resource {
   /**
    * Setup the initial resource.
    */
-  constructor(resourceName, schema, { endpoints = new Map() } = {}, options = ['find', 'findOne', 'create', 'update', 'remove']) {
+  constructor(resourceName, schema, { endpoints = new Map(), disable = [] } = {}) {
     if (typeof resourceName !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
     if (typeof schema !== 'object') {
       throw new Error('Parameter "schema" must be given to the Resource constructor as mongoose model.');
     }
+    if (!Array.isArray(disable)) {
+      throw new Error('Parameter "options.disable" must be given to the Resource constructor as an array.');
+    }
     this.resourceName = camelCase(singular(resourceName));
     this.modelName = pascalCase(this.resourceName);
     this.schema = schema;
-    this.options = options;
+    this.disable = disable;
     this.endpoints = new Map([
       ...this.defaults.entries(),
       ...endpoints.entries(),
@@ -72,48 +75,54 @@ class Resource {
    */
   get defaults() {
     const routes = new Map();
-    if (this.options.filter((option) => option === 'find').length > 0) routes.set(this.localise('find'), {
-      path: '/',
-      method: 'get',
-      handler: find(this.resourceName),
-      activate: [],
-    });
-    if (this.options.filter((option) => option === 'findOne').length > 0) routes.set(this.localise('findOne'), {
-      path: `/:${this.resourceName}Id`,
-      method: 'get',
-      handler: findOne(this.resourceName),
-      activate: [],
-    })
-    if (this.options.filter((option) => option === 'create').length > 0) routes.set(this.localise('create'), {
-      path: '/',
-      method: 'post',
-      handler: create(this.resourceName),
-      activate: [],
-    })
-    if (this.options.filter((option) => option === 'update').length > 0) routes.set(this.localise('update'), {
-      path: `/:${this.resourceName}Id`,
-      method: 'patch',
-      handler: update(this.resourceName),
-      activate: [],
-    })
-    if (this.options.filter((option) => option === 'remove').length > 0) routes.set(this.localise('remove'), {
-      path: `/:${this.resourceName}Id`,
-      method: 'delete',
-      handler: remove(this.resourceName),
-      activate: [],
-    });
+    routes
+      .set(this.localise('find'), {
+        path: '/',
+        method: 'get',
+        handler: find(this.resourceName),
+        activate: [],
+      })
+      .set(this.localise('findOne'), {
+        path: `/:${this.resourceName}Id`,
+        method: 'get',
+        handler: findOne(this.resourceName),
+        activate: [],
+      })
+      .set(this.localise('create'), {
+        path: '/',
+        method: 'post',
+        handler: create(this.resourceName),
+        activate: [],
+      })
+      .set(this.localise('update'), {
+        path: `/:${this.resourceName}Id`,
+        method: 'patch',
+        handler: update(this.resourceName),
+        activate: [],
+      })
+      .set(this.localise('remove'), {
+        path: `/:${this.resourceName}Id`,
+        method: 'delete',
+        handler: remove(this.resourceName),
+        activate: [],
+      });
     return routes;
   }
 
-  addMiddleware(root, id, middleware) {
-    const label = root ? this.localise(id) : id;
-    const update = this.endpoints.get(label);
-    if (update) {
-      update.activate.push(middleware);
-      this.endpoints.set(label, update);
-    } else {
+  /**
+   * Add activation middleware to an endpoint.
+   *
+   * @param {string} id the id of the endpoint to apply the middleware
+   * @param {function} middleware the middleware function
+   */
+  addMiddleware(id, middleware, { localise = true, start = false } = {}) {
+    const key = localise ? this.localise(id) : id;
+    if (!this.endpoints.has(key)) {
       throw new Error('There is no existing route with the id provided.');
     }
+    const endpoint = this.endpoints.get(key);
+    endpoint.activate = start ? [middleware, ...endpoint.activate] : [...endpoint.activate, middleware];
+    this.endpoints.set(key, endpoint);
   }
 
   /**
@@ -139,7 +148,10 @@ class Resource {
       method,
       handler,
       activate,
-    }) => {
+    }, key) => {
+      if (this.disable && this.disable.indexOf(key) >= 0) {
+        return; // don't add endpoint if it is disabled
+      }
       const middleware = call => (req, res, next) => call({ req, res, next, model })
         .catch(e => res.send({ error: e.message }));
       router[lowerCase(method)](
