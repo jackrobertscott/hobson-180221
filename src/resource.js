@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, middlify } = require('./util');
+const { checkString, checkConnection, middlify } = require('./util');
 const {
   find,
   findOne,
@@ -50,6 +50,7 @@ class Resource {
     this.resourceName = camelCase(singular(resourceName));
     this.schema = schema;
     this.disable = disable;
+    this.connection = false;
     this.endpoints = new Map([
       ...this.defaults.entries(),
       ...endpoints.entries(),
@@ -123,6 +124,7 @@ class Resource {
    * @param {function} middleware the middleware function
    */
   addMiddleware(id, middleware, { start = false } = {}) {
+    checkConnection(this.connection);
     if (!this.endpoints.has(id)) {
       throw new Error('There is no existing route with the id provided.');
     }
@@ -137,6 +139,7 @@ class Resource {
    * @param {object} app the express application instance
    */
   attach(app) {
+    checkConnection(this.connection);
     if (!app) {
       throw new Error('Parameter "app" must be given to the Resource constructor as mongoose model.');
     }
@@ -157,6 +160,7 @@ class Resource {
       router[lowerCase(method)](path, ...middleware, work);
     });
     app.use(`/${this.manyName}`, router);
+    this.connection = true;
   }
 
 }
