@@ -149,7 +149,13 @@ class Resource {
       handler,
       activate,
     }, key) => {
-      if (this.disable && this.disable.indexOf(key) >= 0) {
+      if (this.disable && this.disable.find((route) => {
+        if (typeof route === 'string') {
+          return this.localise(route) === key;
+        }
+        const id = route.localise ? this.localise(route.id) : route.id;
+        return id === key;
+      })) {
         return; // don't add endpoint if it is disabled
       }
       const middleware = call => (req, res, next) => call({ req, res, next, model })

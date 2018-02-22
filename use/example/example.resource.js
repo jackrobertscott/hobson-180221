@@ -19,7 +19,10 @@ endpoints.set('smackTalk', {
 
 const example = new Resource('example', schema, {
   endpoints,
-  disable: ['findOne'],
+  disable: [{
+    id: 'findOne',
+    localise: true,
+  }, 'remove'],
 });
 
 example.addMiddleware('find', async () => {
