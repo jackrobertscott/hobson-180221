@@ -35,7 +35,13 @@ class Resource {
   }
 
   /**
-   * Setup the initial resource.
+   * Create the RESTful resource.
+   *
+   * @param {string} resourceName name of the resource
+   * @param {object} schema mongoose schema
+   * @param {object} options options for the resource
+   * @param {Map} options.endpoints custom routes for the resource
+   * @param {array} options.disable routes to disable
    */
   constructor(resourceName, schema, { endpoints = new Map(), disable = [] } = {}) {
     if (typeof resourceName !== 'string') {
@@ -137,6 +143,9 @@ class Resource {
 
   /**
    * Add a hook to an endpoint function.
+   *
+   * @param {string} id the id of the endpoint
+   * @param {function} hook a function to run
    */
   addPreHook(id, hook) {
     checkString(id, { method: 'addPreHook' });
@@ -152,6 +161,9 @@ class Resource {
 
   /**
    * Add a hook to an endpoint function.
+   *
+   * @param {string} id the id of the endpoint
+   * @param {function} hook a function to run
    */
   addPostHook(id, hook) {
     checkString(id, { method: 'addPostHook' });
@@ -163,6 +175,24 @@ class Resource {
       hooks = this.postHooks.get(id);
     }
     this.postHooks.set(id, [...hooks, hook]);
+  }
+
+  /**
+   * Add activation middleware to an endpoint.
+   *
+   * @param {string} id the id of the endpoint
+   * @param {object} endpoint the endpoint data
+   * @param {string} endpoint.path route path of the endpoint
+   * @param {string} endpoint.method the type of HTTP request
+   * @param {function} endpoint.handler function which handles an enpoint request
+   * @param {array} endpoint.activate middleware called before the handler function is invoked
+   */
+  addEndpoint(id, endpoint) {
+    checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
+    if (typeof endpoint !== 'object') {
+      throw new Error(`Endpoint data for ${id} must be an object.`);
+    }
+    this.endpoints.set(Resource.formatEndpoint([id, endpoint]));
   }
 
   /**
