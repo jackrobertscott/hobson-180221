@@ -13,6 +13,15 @@ module.exports.checkString = function checkString(chars, { method, message } = {
 };
 
 /**
+ * Check an parameter is a string or throw an error.
+ */
+module.exports.checkConnection = function checkConnection(connection) {
+  if (connection) {
+    throw new Error('Resource can not be changed once it is attached to the app.');
+  }
+};
+
+/**
  * Check if the id of an item is a valid.
  */
 module.exports.checkObjectId = function checkObjectId(id, { message } = {}) {

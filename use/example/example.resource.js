@@ -1,5 +1,5 @@
-const Resource = require('../../src/index');
-const exampleModel = require('./example.model');
+const { Resource } = require('../../lib/index');
+const exampleSchema = require('./example.schema');
 
 const endpoints = new Map();
 
@@ -17,12 +17,24 @@ endpoints.set('smackTalk', {
   }),
 });
 
-const example = new Resource('example', exampleModel, {
+const example = new Resource('example', exampleSchema, {
   endpoints,
 });
 
 example.addMiddleware('smackTalk', () => {
   throw new Error('ZOO WEE MAMA!');
+});
+
+example.addPostHook('find', ({ context }) => {
+  if (context.messageOne !== 'Jack is awesome' || context.messageTwo !== 'Jack is cool') {
+    throw new Error('This will not be called as my function is baller af.');
+  }
+});
+example.addPreHook('find', ({ context }) => {
+  Object.assign(context, { messageOne: 'Jack is awesome' });
+});
+example.addPreHook('find', ({ context }) => {
+  Object.assign(context, { messageTwo: 'Jack is cool' });
 });
 
 module.exports = example;
