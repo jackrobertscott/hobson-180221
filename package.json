@@ -1,5 +1,5 @@
 {
-  "name": "express-sleep",
+  "name": "hobson",
   "version": "0.1.0",
   "description": "Convention over configuration approach to RESTful endpoints using express.",
   "main": "src/index.js",
