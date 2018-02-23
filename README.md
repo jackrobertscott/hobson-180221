@@ -1,4 +1,5 @@
 # express-sleep
+[![Build Status](https://travis-ci.org/jackrobertscott/express-sleep.svg?branch=master)](https://travis-ci.org/jackrobertscott/express-sleep)
 
 Convention over configuration approach to RESTful endpoints using express.
 

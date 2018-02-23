@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-module.exports = new mongoose.Schema({
+const exampleSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -11,3 +11,5 @@ module.exports = new mongoose.Schema({
     default: 0,
   },
 });
+
+module.exports = exampleSchema;
