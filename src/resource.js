@@ -42,8 +42,8 @@ class Resource {
    * @param {object} options options for the resource
    * @param {array} options.disable routes to disable
    */
-  constructor(resourceName, schema, { disable = [] } = {}) {
-    if (typeof resourceName !== 'string') {
+  constructor({ name, schema, disable = [] } = {}) {
+    if (typeof name !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
     if (typeof schema !== 'object') {
@@ -52,7 +52,7 @@ class Resource {
     if (!Array.isArray(disable)) {
       throw new Error('Parameter "options.disable" must be given to the Resource constructor as an array.');
     }
-    this.resourceName = camelCase(singular(resourceName));
+    this.resourceName = camelCase(singular(name));
     this.schema = schema;
     this.disable = disable;
     this.setup = false;
@@ -134,6 +134,27 @@ class Resource {
   /**
    * Add activation middleware to an endpoint.
    *
+   * @param {string} id the id of the endpoint
+   * @param {object} endpoint the endpoint data
+   * @param {string} endpoint.path route path of the endpoint
+   * @param {string} endpoint.method the type of HTTP request
+   * @param {function} endpoint.handler function which handles an enpoint request
+   * @param {array} endpoint.activate middleware called before the handler function is invoked
+   */
+  addEndpoint(id, endpoint) {
+    checkCompile(this.setup);
+    checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
+    if (typeof endpoint !== 'object') {
+      throw new Error(`Endpoint data for ${id} must be an object.`);
+    }
+    const submission = Resource.formatEndpoint([id, endpoint]);
+    this.endpoints.set(...submission);
+    return this;
+  }
+
+  /**
+   * Add activation middleware to an endpoint.
+   *
    * @param {string} id the id of the endpoint to apply the middleware
    * @param {function} middleware the middleware function
    */
@@ -186,27 +207,6 @@ class Resource {
       hooks = this.postHooks.get(id);
     }
     this.postHooks.set(id, [...hooks, hook]);
-    return this;
-  }
-
-  /**
-   * Add activation middleware to an endpoint.
-   *
-   * @param {string} id the id of the endpoint
-   * @param {object} endpoint the endpoint data
-   * @param {string} endpoint.path route path of the endpoint
-   * @param {string} endpoint.method the type of HTTP request
-   * @param {function} endpoint.handler function which handles an enpoint request
-   * @param {array} endpoint.activate middleware called before the handler function is invoked
-   */
-  addEndpoint(id, endpoint) {
-    checkCompile(this.setup);
-    checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
-    if (typeof endpoint !== 'object') {
-      throw new Error(`Endpoint data for ${id} must be an object.`);
-    }
-    const submission = Resource.formatEndpoint([id, endpoint]);
-    this.endpoints.set(...submission);
     return this;
   }
 
