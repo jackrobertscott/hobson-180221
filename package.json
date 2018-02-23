@@ -1,7 +1,7 @@
 {
   "name": "hobson",
   "version": "0.1.0",
-  "description": "Convention over configuration approach to RESTful endpoints using express.",
+  "description": "Lightweight convention over configuration approach to RESTful endpoints using express.",
   "main": "src/index.js",
   "engines": {
     "node": ">=7.6"
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jackrobertscott/express-sleep.git"
+    "url": "git+https://github.com/jackrobertscott/hobson.git"
   },
   "keywords": [
     "express",
@@ -30,9 +30,9 @@
   "author": "Jack Scott <jack.rob.scott@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jackrobertscott/express-sleep/issues"
+    "url": "https://github.com/jackrobertscott/hobson/issues"
   },
-  "homepage": "https://github.com/jackrobertscott/express-sleep#readme",
+  "homepage": "https://github.com/jackrobertscott/hobson#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",

@@ -1,5 +1,5 @@
-# express-sleep
-[![Build Status](https://travis-ci.org/jackrobertscott/express-sleep.svg?branch=master)](https://travis-ci.org/jackrobertscott/express-sleep)
+# hobson
+[![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson)
 
 Lightweight node.js package which takes a convention over configuration approach to RESTful endpoints using express.
 
