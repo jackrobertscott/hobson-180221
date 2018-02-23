@@ -1,4 +1,4 @@
-const { Resource } = require('../../src/index');
+const { Resource } = require('../../lib/index');
 const exampleSchema = require('./example.schema');
 
 const endpoints = new Map();

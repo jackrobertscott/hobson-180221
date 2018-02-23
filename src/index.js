@@ -1,3 +1,5 @@
+require('babel-polyfill');
+
 const Resource = require('./resource');
 const UserResource = require('./user.resource');
 

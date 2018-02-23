@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const HTTPStatus = require('http-status');
 const chalk = require('chalk');
 const app = require('./app');
