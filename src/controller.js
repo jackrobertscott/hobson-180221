@@ -7,27 +7,27 @@ const { checkString, checkObjectId, checkExists } = require('./util');
  *
  * @param {string} name the resource name
  */
-module.exports.find = function find(name) {
+function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
-  return async ({ req, model }) => {
-    const { filter } = req.query;
-    const value = await model.find(filter ? decodeURIComponent(filter) : {});
+  return async ({ query: { filter }, model }) => {
+    const value = await model.find(filter || {});
     checkExists(value);
     return {
       [plural(name)]: value,
     };
   };
-};
+}
+module.exports.find = find;
 
 /**
  * Find one item in the database by it's id.
  *
  * @param {string} name the resource name
  */
-module.exports.findOne = function findOne(name) {
+function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
-  return async ({ req, model }) => {
-    const id = req.params[`${name}Id`];
+  return async ({ params, model }) => {
+    const id = params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
     checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
@@ -35,56 +35,60 @@ module.exports.findOne = function findOne(name) {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.findOne = findOne;
 
 /**
  * Create a resource item in the database.
  *
  * @param {string} name the resource name
  */
-module.exports.create = function create(name) {
+function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
-  return async ({ req, model }) => {
-    const value = await model.create(req.body);
+  return async ({ body, model }) => {
+    const value = await model.create(body);
     checkExists(value, { message: `There was an error creating an item for ${name}.` });
     return {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.create = create;
 
 /**
  * Update a resource item in the database.
  *
  * @param {string} name the resource name
  */
-module.exports.update = function update(name) {
+function update(name) {
   checkString(name, { method: camelCase(`update${name}`) });
-  return async ({ req, model }) => {
-    const id = req.params[`${name}Id`];
+  return async ({ params, body, model }) => {
+    const id = params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
     checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
-    await Object.assign(value, req.body).save();
+    await Object.assign(value, body).save();
     return {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.update = update;
 
 /**
  * Remove a resource from the database.
  *
  * @param {string} name the resource name
  */
-module.exports.remove = function remove(name) {
+function remove(name) {
   checkString(name, { method: camelCase(`remove${name}`) });
-  return async ({ req, model }) => {
-    const id = req.params[`${name}Id`];
+  return async ({ params, model }) => {
+    const id = params[`${name}Id`];
     checkObjectId(id);
     await model.findByIdAndRemove(id);
     return {
       [singular(name)]: null,
     };
   };
-};
+}
+module.exports.remove = remove;

@@ -1,21 +1,25 @@
-# express-sleep
-[![Build Status](https://travis-ci.org/jackrobertscott/express-sleep.svg?branch=master)](https://travis-ci.org/jackrobertscott/express-sleep)
+# hobson
+[![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson)
 
-Convention over configuration approach to RESTful endpoints using express.
+Lightweight node.js package which takes a convention over configuration approach to RESTful endpoints using express.
+
+## Goal
+
+This package should allow you to create a fully working RESTful api with minimal configuration. Should only have to define a schema, add some custom endpoints and configure your authentication and you are done.
 
 ## Features
 
 RESTful endpoint features:
-- Routes
-- Permissions and authentication
-- Default rest endpoints
-- Disable defaults
-- Custom endpoints
+- Optional CRUD endpoints provided by default
+- Custom endpoints can be added
+- Endpoints are protected by default
+- Provide permission functions to allow access
 - Mongoose model schemas
+- Pre and post hooks to all endpoints
 
 ## Usage
 
-Define a model.
+Takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 ```js
 import mongoose from 'mongoose';
@@ -34,6 +38,8 @@ export const messageSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+// custom mongoose functions, virtual properties, and more...
+
 export default messageSchema;
 ```
 
@@ -42,63 +48,53 @@ Create the resource.
 ```js
 import messageSchema from './messageSchema';
 
-// create the resource
-const messageResource = new Resource('message', messageSchema);
+const messageResource = new Resource({
+  name: 'message',
+  schema: messageSchema,
+});
 
-// attach the routes to the app
-messageResource.attach(app);
+// other cool things...
+
+messageResource.compile().attach(app);
 ```
 
-Set up routes.
+Create custom endpoints.
 
 ```js
-const routes = new Map();
+messageResource.addEndpoint('talkSmack', {
+  path: '/talk/smack',
+  method: 'get',
+  handler: () => 'Yo mama!',
+});
+```
 
-routes
-  .set('findMessages', {
-    path: '/',
-    method: 'get',
-    handler: findMessages,
-    activate: [
-      isOwner,
-      ({ user }) => user.role === ROLE_ADMIN, // example access check
-    ],
+Routes are protected by default. Provide permission functions to give access to your users.
+
+```js
+messageResource.addPermission('talkSmack', ({ user }) => {
+  return user.role === ROLE_ADMIN;
+});
+```
+
+Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
+
+```js
+messageResource
+  .addPreHook('talkSmack', ({ context }) => {
+    context.appendMessage = 'Hi Fred,';
   })
-  .set('findOneMessage', {
-    path: '/:messageId',
-    method: 'get',
-    handler: async ({ req }) => {
-      const { messageId } = req.params;
-      if (!ObjectId.isValid(messageId)) {
-        throw new Error('Request did not contain a valid id.')
-      }
-      const message = await Message.findById(messageId);
-      if (!message) {
-        throw new NotFoundError(`Message was not found with id "${messageId}".`);
-      }
-      return { message };
-    },
-    activate: [
-      isOwner,
-      ({ user }) => user.role === ROLE_ADMIN, // example access check
-    ],
+  .addPostHook('talkSmack', ({ data, context }) => {
+    console.log(context.appendMessage, data); // Hi Fred, Yo mama!
   })
 ```
 
-Update the routes as see fit.
+Use old express middleware too. This will be run before all other functions.
 
 ```js
-const access = new Map();
-
-access
-  .set('findMessages', [
-    isAnyone,
-  ])
-  .set('updateMessages', [
-    isAdmin,
-  ]);
-
-const messageResource = new Resource('message', messageSchema, { access });
+messageResource.addMiddleware('talkSmack', (req, res, next) => {
+  req.example = 'Make sure your old middleware functions call next()';
+  next();
+});
 ```
 
 ## Endpoint Standards
