@@ -1,9 +1,9 @@
 const { Resource } = require('../../lib/index');
 const exampleSchema = require('./example.schema');
 
-const endpoints = new Map();
+const example = new Resource('example', exampleSchema);
 
-endpoints.set('smackTalk', {
+example.addEndpoint('smackTalk', {
   path: '/smack/talk',
   method: 'get',
   handler: async () => ({
@@ -16,11 +16,6 @@ endpoints.set('smackTalk', {
     ][Math.floor(Math.random() * 5)],
   }),
 });
-
-const example = new Resource('example', exampleSchema, {
-  endpoints,
-});
-
 example.addMiddleware('smackTalk', () => {
   throw new Error('ZOO WEE MAMA!');
 });
@@ -51,4 +46,4 @@ example.addPreHook('find', ({ context }) => {
   Object.assign(context, { messageTwo: 'Jack is cool' });
 });
 
-module.exports = example;
+module.exports = example.compile();

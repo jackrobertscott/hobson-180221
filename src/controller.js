@@ -7,7 +7,7 @@ const { checkString, checkObjectId, checkExists } = require('./util');
  *
  * @param {string} name the resource name
  */
-module.exports.find = function find(name) {
+function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
   return async ({ req, model }) => {
     const { filter } = req.query;
@@ -17,14 +17,15 @@ module.exports.find = function find(name) {
       [plural(name)]: value,
     };
   };
-};
+}
+module.exports.find = find;
 
 /**
  * Find one item in the database by it's id.
  *
  * @param {string} name the resource name
  */
-module.exports.findOne = function findOne(name) {
+function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
   return async ({ req, model }) => {
     const id = req.params[`${name}Id`];
@@ -35,14 +36,15 @@ module.exports.findOne = function findOne(name) {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.findOne = findOne;
 
 /**
  * Create a resource item in the database.
  *
  * @param {string} name the resource name
  */
-module.exports.create = function create(name) {
+function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
   return async ({ req, model }) => {
     const value = await model.create(req.body);
@@ -51,14 +53,15 @@ module.exports.create = function create(name) {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.create = create;
 
 /**
  * Update a resource item in the database.
  *
  * @param {string} name the resource name
  */
-module.exports.update = function update(name) {
+function update(name) {
   checkString(name, { method: camelCase(`update${name}`) });
   return async ({ req, model }) => {
     const id = req.params[`${name}Id`];
@@ -70,14 +73,15 @@ module.exports.update = function update(name) {
       [singular(name)]: value,
     };
   };
-};
+}
+module.exports.update = update;
 
 /**
  * Remove a resource from the database.
  *
  * @param {string} name the resource name
  */
-module.exports.remove = function remove(name) {
+function remove(name) {
   checkString(name, { method: camelCase(`remove${name}`) });
   return async ({ req, model }) => {
     const id = req.params[`${name}Id`];
@@ -87,4 +91,5 @@ module.exports.remove = function remove(name) {
       [singular(name)]: null,
     };
   };
-};
+}
+module.exports.remove = remove;

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkConnection, middlify } = require('./util');
+const { checkString, checkCompile, middlify, hookify } = require('./util');
 const {
   find,
   findOne,
@@ -40,10 +40,9 @@ class Resource {
    * @param {string} resourceName name of the resource
    * @param {object} schema mongoose schema
    * @param {object} options options for the resource
-   * @param {Map} options.endpoints custom routes for the resource
    * @param {array} options.disable routes to disable
    */
-  constructor(resourceName, schema, { endpoints = new Map(), disable = [] } = {}) {
+  constructor(resourceName, schema, { disable = [] } = {}) {
     if (typeof resourceName !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
@@ -56,11 +55,8 @@ class Resource {
     this.resourceName = camelCase(singular(resourceName));
     this.schema = schema;
     this.disable = disable;
-    this.connection = false;
-    this.endpoints = new Map([
-      ...this.defaults.entries(),
-      ...endpoints.entries(),
-    ].map(Resource.formatEndpoint));
+    this.setup = false;
+    this.endpoints = new Map([...this.defaults.entries()].map(Resource.formatEndpoint));
     this.preHooks = new Map();
     this.postHooks = new Map();
   }
@@ -126,19 +122,31 @@ class Resource {
   }
 
   /**
+   * Get the model after it has been defined.
+   */
+  get model() {
+    if (!this.resourceModel) {
+      throw new Error('Please run Resource.attach() before attempting to get the model');
+    }
+    return this.resourceModel;
+  }
+
+  /**
    * Add activation middleware to an endpoint.
    *
    * @param {string} id the id of the endpoint to apply the middleware
    * @param {function} middleware the middleware function
    */
   addMiddleware(id, middleware, { start = false } = {}) {
-    checkConnection(this.connection);
+    checkCompile(this.setup);
+    checkString(id, { method: 'addMiddleware' });
     if (!this.endpoints.has(id)) {
       throw new Error('There is no existing route with the id provided.');
     }
     const endpoint = this.endpoints.get(id);
     endpoint.activate = start ? [middleware, ...endpoint.activate] : [...endpoint.activate, middleware];
     this.endpoints.set(id, endpoint);
+    return this;
   }
 
   /**
@@ -148,6 +156,7 @@ class Resource {
    * @param {function} hook a function to run
    */
   addPreHook(id, hook) {
+    checkCompile(this.setup);
     checkString(id, { method: 'addPreHook' });
     if (typeof hook !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
@@ -157,6 +166,7 @@ class Resource {
       hooks = this.preHooks.get(id);
     }
     this.preHooks.set(id, [...hooks, hook]);
+    return this;
   }
 
   /**
@@ -166,6 +176,7 @@ class Resource {
    * @param {function} hook a function to run
    */
   addPostHook(id, hook) {
+    checkCompile(this.setup);
     checkString(id, { method: 'addPostHook' });
     if (typeof hook !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPostHook for "${id}".`);
@@ -175,6 +186,7 @@ class Resource {
       hooks = this.postHooks.get(id);
     }
     this.postHooks.set(id, [...hooks, hook]);
+    return this;
   }
 
   /**
@@ -188,39 +200,26 @@ class Resource {
    * @param {array} endpoint.activate middleware called before the handler function is invoked
    */
   addEndpoint(id, endpoint) {
+    checkCompile(this.setup);
     checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
     if (typeof endpoint !== 'object') {
       throw new Error(`Endpoint data for ${id} must be an object.`);
     }
-    this.endpoints.set(Resource.formatEndpoint([id, endpoint]));
+    const submission = Resource.formatEndpoint([id, endpoint]);
+    this.endpoints.set(...submission);
+    return this;
   }
 
   /**
-   * Get the model after it has been defined.
+   * Compile the resource and set it in stone.
    */
-  get model() {
-    if (!this.resourceModel) {
-      throw new Error('Please run Resource.attach() before attempting to get the model');
-    }
-    return this.resourceModel;
-  }
-
-  /**
-   * Attach this resource's routes to the application.
-   *
-   * @param {object} app the express application instance
-   */
-  attach(app) {
-    checkConnection(this.connection);
-    if (!app) {
-      throw new Error('Parameter "app" must be given to the Resource constructor as mongoose model.');
-    }
-    const router = Router();
+  compile() {
     try {
       this.resourceModel = mongoose.model(this.modelName);
     } catch (e) {
       this.resourceModel = mongoose.model(this.modelName, this.schema);
     }
+    this.router = Router();
     this.endpoints.forEach(({
       path,
       method,
@@ -235,22 +234,27 @@ class Resource {
         context: {}, // empty object which can be used to pass information between middlewares
       };
       const middleware = activate.map(middle => middlify(middle, resources));
-      const work = middlify(async (...args) => {
-        if (this.preHooks.has(key)) {
-          const tasks = this.preHooks.get(key).map(hook => hook(...args));
-          await Promise.all(tasks);
-        }
-        const data = await handler(...args);
-        if (this.postHooks.has(key)) {
-          const tasks = this.postHooks.get(key).map(hook => hook(...args));
-          await Promise.all(tasks);
-        }
-        return data;
-      }, resources, true);
-      router[lowerCase(method)](path, ...middleware, work);
+      const hooked = hookify(handler, key, this.preHooks, this.postHooks);
+      const work = middlify(hooked, resources, true);
+      this.router[lowerCase(method)](path, ...middleware, work);
     });
-    app.use(`/${this.manyName}`, router);
-    this.connection = true;
+    this.setup = true;
+    return this;
+  }
+
+  /**
+   * Attach this resource's routes to the application.
+   *
+   * @param {object} app the express application instance
+   */
+  attach(app) {
+    if (!app) {
+      throw new Error('Parameter "app" must be given provided as an express app instance.');
+    }
+    if (!this.setup) {
+      throw new Error('Please compile the resource before it is attached to an app.');
+    }
+    app.use(`/${this.manyName}`, this.router);
   }
 
 }
