@@ -95,7 +95,7 @@ function hookify(key, handler, preHooks, postHooks) {
     }
     const data = await handler(...args);
     if (postHooks.has(key)) {
-      const tasks = postHooks.get(key).map(hook => hook(...args));
+      const tasks = postHooks.get(key).map(hook => hook({ ...args[0], data }, ...args.slice(1)));
       await Promise.all(tasks);
     }
     return data;

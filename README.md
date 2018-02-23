@@ -19,7 +19,7 @@ RESTful endpoint features:
 
 ## Usage
 
-Sleep takes advantage of the awesome powers of mongoose for defining schemas and models.
+Takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 ```js
 import mongoose from 'mongoose';
@@ -38,6 +38,8 @@ export const messageSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+// custom mongoose functions, virtual properties, and more...
+
 export default messageSchema;
 ```
 
@@ -46,63 +48,53 @@ Create the resource.
 ```js
 import messageSchema from './messageSchema';
 
-// create the resource
-const messageResource = new Resource('message', messageSchema);
+const messageResource = new Resource({
+  name: 'message',
+  schema: messageSchema,
+});
 
-// attach the routes to the app
-messageResource.attach(app);
+// other cool things...
+
+messageResource.compile().attach(app);
 ```
 
-Set up routes.
+Create custom endpoints.
 
 ```js
-const routes = new Map();
+messageResource.addEndpoint('talkSmack', {
+  path: '/talk/smack',
+  method: 'get',
+  handler: () => 'Yo mama!',
+});
+```
 
-routes
-  .set('findMessages', {
-    path: '/',
-    method: 'get',
-    handler: findMessages,
-    activate: [
-      isOwner,
-      ({ user }) => user.role === ROLE_ADMIN, // example access check
-    ],
+Routes are protected by default. Provide permission functions to give access to your users.
+
+```js
+messageResource.addPermission('talkSmack', ({ user }) => {
+  return user.role === ROLE_ADMIN;
+});
+```
+
+Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
+
+```js
+messageResource
+  .addPreHook('talkSmack', ({ context }) => {
+    context.appendMessage = 'Hi Fred,';
   })
-  .set('findOneMessage', {
-    path: '/:messageId',
-    method: 'get',
-    handler: async ({ req }) => {
-      const { messageId } = req.params;
-      if (!ObjectId.isValid(messageId)) {
-        throw new Error('Request did not contain a valid id.')
-      }
-      const message = await Message.findById(messageId);
-      if (!message) {
-        throw new NotFoundError(`Message was not found with id "${messageId}".`);
-      }
-      return { message };
-    },
-    activate: [
-      isOwner,
-      ({ user }) => user.role === ROLE_ADMIN, // example access check
-    ],
+  .addPostHook('talkSmack', ({ data, context }) => {
+    console.log(context.appendMessage, data); // Hi Fred, Yo mama!
   })
 ```
 
-Update the routes as see fit.
+Use old express middleware too. This will be run before all other functions.
 
 ```js
-const access = new Map();
-
-access
-  .set('findMessages', [
-    isAnyone,
-  ])
-  .set('updateMessages', [
-    isAdmin,
-  ]);
-
-const messageResource = new Resource('message', messageSchema, { access });
+messageResource.addMiddleware('talkSmack', (req, res, next) => {
+  req.example = 'Make sure your old middleware functions call next()';
+  next();
+});
 ```
 
 ## Endpoint Standards
