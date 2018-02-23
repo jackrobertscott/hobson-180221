@@ -1,6 +1,6 @@
 const { camelCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkObjectId, checkExists } = require('./util');
+const { checkString, checkObjectId, checkExists } = require('./helpers');
 
 /**
  * Find many items in the database.

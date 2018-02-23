@@ -2,14 +2,14 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkCompile, middlify, hookify, permissionify } = require('./util');
+const { checkString, checkCompile, middlify, hookify, permissionify } = require('./utils/helpers');
 const {
   find,
   findOne,
   create,
   update,
   remove,
-} = require('./controller');
+} = require('./utils/controller');
 
 class Resource {
 
