@@ -2,12 +2,11 @@ require('dotenv').config();
 
 const { expect } = require('chai');
 const request = require('supertest');
-const mongoose = require('mongoose');
 const app = require('../use/app');
 const exampleResource = require('../use/example/example.resource');
 
 exampleResource.attach(app);
-const Example = mongoose.model(exampleResource.modelName);
+const Example = exampleResource.model;
 const server = request(app);
 
 describe('Standard routes', () => {

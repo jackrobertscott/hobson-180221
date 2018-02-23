@@ -166,6 +166,16 @@ class Resource {
   }
 
   /**
+   * Get the model after it has been defined.
+   */
+  get model() {
+    if (!this.resourceModel) {
+      throw new Error('Please run Resource.attach() before attempting to get the model');
+    }
+    return this.resourceModel;
+  }
+
+  /**
    * Attach this resource's routes to the application.
    *
    * @param {object} app the express application instance
@@ -175,8 +185,12 @@ class Resource {
     if (!app) {
       throw new Error('Parameter "app" must be given to the Resource constructor as mongoose model.');
     }
-    const model = mongoose.model(this.modelName, this.schema);
     const router = Router();
+    try {
+      this.resourceModel = mongoose.model(this.modelName);
+    } catch (e) {
+      this.resourceModel = mongoose.model(this.modelName, this.schema);
+    }
     this.endpoints.forEach(({
       path,
       method,
@@ -187,7 +201,7 @@ class Resource {
         return; // don't add endpoint if it is disabled
       }
       const resources = {
-        model,
+        model: this.resourceModel,
         context: {}, // empty object which can be used to pass information between middlewares
       };
       const middleware = activate.map(middle => middlify(middle, resources));
