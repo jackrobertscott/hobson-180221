@@ -25,6 +25,12 @@ example
         'Hello! You smell.',
       ][Math.floor(Math.random() * 5)],
     }),
+    permissions: [
+      () => true,
+    ],
+    postHooks: [
+      ({ data }) => Object.assign(data, { attach: 'hello' }),
+    ],
   })
   .addEndpoint('niceTalk', {
     path: '/nice/talk',
@@ -38,6 +44,9 @@ example
         'Hello! You smell nice.',
       ][Math.floor(Math.random() * 5)],
     }),
+    permissions: [
+      () => true,
+    ],
   });
 
 /**

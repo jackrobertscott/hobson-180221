@@ -67,4 +67,10 @@ describe('Standard routes', () => {
       expect(count).to.equal(2);
     }));
 
+  it('should get all examples', () => server.get('/examples/smack/talk')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(200)
+    .expect(({ body: { data } }) => expect(data.attach).to.equal('hello')));
+
 });
