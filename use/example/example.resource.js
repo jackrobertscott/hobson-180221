@@ -41,12 +41,23 @@ example
   });
 
 /**
- * Middlewares
+ * Middleware (old express middleware)
  */
 example
-  .addMiddleware('smackTalk', () => {
-    throw new Error('ZOO WEE MAMA!');
+  .addMiddleware('find', (req, res, next) => {
+    // console.log('middleware called');
+    next();
   });
+
+/**
+ * Permissions
+ */
+example
+  .addPermission('find', () => true)
+  .addPermission('findOne', () => true)
+  .addPermission('create', () => true)
+  .addPermission('update', () => true)
+  .addPermission('remove', () => true);
 
 /**
  * Hooks

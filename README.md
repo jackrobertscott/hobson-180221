@@ -1,21 +1,25 @@
 # express-sleep
 [![Build Status](https://travis-ci.org/jackrobertscott/express-sleep.svg?branch=master)](https://travis-ci.org/jackrobertscott/express-sleep)
 
-Convention over configuration approach to RESTful endpoints using express.
+Lightweight node.js package which takes a convention over configuration approach to RESTful endpoints using express.
+
+## Goal
+
+This package should allow you to create a fully working RESTful api with minimal configuration. Should only have to define a schema, add some custom endpoints and configure your authentication and you are done.
 
 ## Features
 
 RESTful endpoint features:
-- Routes
-- Permissions and authentication
-- Default rest endpoints
-- Disable defaults
-- Custom endpoints
+- Optional CRUD endpoints provided by default
+- Custom endpoints can be added
+- Endpoints are protected by default
+- Provide permission functions to allow access
 - Mongoose model schemas
+- Pre and post hooks to all endpoints
 
 ## Usage
 
-Define a model.
+Sleep takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 ```js
 import mongoose from 'mongoose';

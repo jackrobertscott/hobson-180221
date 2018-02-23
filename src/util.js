@@ -71,15 +71,15 @@ module.exports.formatResponse = formatResponse;
  */
 function middlify(middleware, resources, end = false) {
   return (req, res, next) => (async () => middleware({ req, res, next, ...resources }))()
-    .then(data => end && res.status(200).json(module.exports.formatResponse(data)))
+    .then(data => end ? res.status(200).json(formatResponse(data)) : next())
     .catch(error => res.status(error.code || 500).json(module.exports.formatResponse(error)));
 }
 module.exports.middlify = middlify;
 
 /**
- * Format middleware to match express infrastructure.
+ * Format hooks and execute work.
  */
-function hookify(handler, key, preHooks = new Map(), postHooks = new Map()) {
+function hookify(key, handler, preHooks, postHooks) {
   return async (...args) => {
     if (preHooks.has(key)) {
       const tasks = preHooks.get(key).map(hook => hook(...args));
@@ -94,3 +94,22 @@ function hookify(handler, key, preHooks = new Map(), postHooks = new Map()) {
   };
 }
 module.exports.hookify = hookify;
+
+/**
+ * Check permissions.
+ */
+function permissionify(key, permissions) {
+  return async (...args) => {
+    let checks = [];
+    if (permissions.has(key)) {
+      checks = permissions.get(key).map(check => check(...args));
+    }
+    const status = await Promise.all(checks);
+    if (!status.find(outcome => !!outcome)) {
+      const error = new Error('Permission denied to access route.');
+      error.code = HTTPStatus.UNAUTHORIZED;
+      throw error;
+    }
+  };
+}
+module.exports.permissionify = permissionify;

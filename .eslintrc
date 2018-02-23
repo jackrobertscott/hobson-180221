@@ -3,7 +3,8 @@
 	"rules": {
 		"object-curly-newline": "off",
 		"max-len": "off",
-		"padded-blocks": "off"
+		"padded-blocks": "off",
+		"no-confusing-arrow": "off"
 	},
 	"env": {
 		"node": true,
