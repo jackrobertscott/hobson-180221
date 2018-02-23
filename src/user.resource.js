@@ -5,9 +5,12 @@ class UserResource extends Resource {
 
   constructor(...args) {
     super(...args);
-    if (typeof this.schema.obj.password !== 'object') {
-      throw new Error('User resource must contain a "password" field.');
-    }
+    this.schema.add({
+      password: {
+        type: String,
+        required: true,
+      },
+    });
     this.schema.pre('save', function preSave(next) {
       if (!this.isModified('password')) {
         next();

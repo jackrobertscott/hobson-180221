@@ -70,7 +70,15 @@ module.exports.formatResponse = formatResponse;
  * Format middleware to match express infrastructure.
  */
 function middlify(middleware, resources, end = false) {
-  return (req, res, next) => (async () => middleware({ req, res, next, ...resources }))()
+  return (req, res, next) => (async () => middleware({
+    req,
+    res,
+    next,
+    params: req.params,
+    body: req.body,
+    query: req.query,
+    ...resources,
+  }))()
     .then(data => end ? res.status(200).json(formatResponse(data)) : next())
     .catch(error => res.status(error.code || 500).json(module.exports.formatResponse(error)));
 }
