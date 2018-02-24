@@ -19,10 +19,16 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing hobson and mongoose. Mongoose is required as it gives us awesome schema validation features.
+Get started by installing hobson and mongoose (if you haven't already).
 
 ```sh
-npm i -S hobson mongoose
+npm install --save hobson
+```
+
+Mongoose is required as it gives us awesome schema validation features.
+
+```sh
+npm install --save mongoose
 ```
 
 ## Usage
@@ -30,9 +36,9 @@ npm i -S hobson mongoose
 Takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 ```js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
-export const unicornSchema = new mongoose.Schema({
+const unicornSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
     ref: 'User', // same as userResource.modelName
@@ -48,14 +54,14 @@ export const unicornSchema = new mongoose.Schema({
 
 // custom mongoose functions, virtual properties, and more...
 
-export default unicornSchema;
+module.exports = unicornSchema;
 ```
 
 Create the resource.
 
 ```js
-import { Resource } from 'hobson';
-import unicornSchema from './unicornSchema';
+const { Resource } = require('hobson');
+const unicornSchema = require('./unicornSchema');
 
 const unicornResource = new Resource({
   name: 'unicorn',
