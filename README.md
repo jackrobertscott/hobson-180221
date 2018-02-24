@@ -4,11 +4,9 @@
 
 Lightweight node.js package which takes a convention over configuration approach to RESTful endpoints using express.
 
-## Goal
-
-This package should allow you to create a fully working RESTful api with minimal configuration. Should only have to define a schema, add some custom endpoints and configure your authentication and you are done.
-
 ## Features
+
+Get up and running with a fully functioning CRUD api with minimum configuration. Simply set add your schema to a resource and attach it to your app.
 
 RESTful endpoint features:
 
