@@ -1,6 +1,6 @@
 {
   "name": "hobson",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Lightweight convention over configuration approach to RESTful endpoints using express.",
   "main": "src/index.js",
   "scripts": {
