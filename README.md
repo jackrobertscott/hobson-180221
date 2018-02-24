@@ -17,6 +17,12 @@ RESTful endpoint features:
 - Mongoose model schemas
 - Pre and post hooks to all endpoints
 
+## Install
+
+```sh
+$ npm i -S hobson mongoose
+```
+
 ## Usage
 
 Takes advantage of the awesome powers of mongoose for defining schemas and models.
