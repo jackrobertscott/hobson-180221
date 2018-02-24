@@ -32,10 +32,10 @@ Takes advantage of the awesome powers of mongoose for defining schemas and model
 ```js
 import mongoose from 'mongoose';
 
-export const messageSchema = new mongoose.Schema({
+export const unicornSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: 'User', // same as userResource.modelName
     required: true,
   },
   name: {
@@ -48,23 +48,25 @@ export const messageSchema = new mongoose.Schema({
 
 // custom mongoose functions, virtual properties, and more...
 
-export default messageSchema;
+export default unicornSchema;
 ```
 
 Create the resource.
 
 ```js
 import { Resource } from 'hobson';
-import messageSchema from './messageSchema';
+import unicornSchema from './unicornSchema';
 
-const messageResource = new Resource({
-  name: 'message',
-  schema: messageSchema,
+const unicornResource = new Resource({
+  name: 'unicorn',
+  schema: unicornSchema,
+  modelName: 'Unicorn', // optional: this will default to "Unicorn"
+  path: '/unicorns', // optional: this will default to "/unicorns"
 });
 
 // other cool things...
 
-messageResource.compile().attach(app);
+unicornResource.attach(app);
 ```
 
 Call the endpoints like you would on a regular RESTful api.
@@ -80,9 +82,9 @@ Call the endpoints like you would on a regular RESTful api.
 Disable any default endpoints when defining the resource.
 
 ```js
-const messageResource = new Resource({
-  name: 'message',
-  schema: messageSchema,
+const unicornResource = new Resource({
+  name: 'unicorn',
+  schema: unicornSchema,
   disable: ['find', 'remove'], // disabled
 });
 ```
@@ -90,7 +92,7 @@ const messageResource = new Resource({
 Create custom endpoints.
 
 ```js
-messageResource.addEndpoint('talkSmack', {
+unicornResource.addEndpoint('talkSmack', {
   path: '/talk/smack',
   method: 'get',
   handler: () => 'Yo mama!',
@@ -100,7 +102,7 @@ messageResource.addEndpoint('talkSmack', {
 Routes are **protected by default**. Provide permission functions to give access to your users.
 
 ```js
-messageResource
+unicornResource
   .addPermission('find', ({ user }) => {
     return true; // access given to everyone
   })
@@ -112,7 +114,7 @@ messageResource
 Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
 
 ```js
-messageResource
+unicornResource
   .addPreHook('talkSmack', ({ context }) => {
     context.appendMessage = 'Hi Fred,';
   })
@@ -124,7 +126,7 @@ messageResource
 Use old express middleware too. This will be run before all other functions.
 
 ```js
-messageResource.addMiddleware('talkSmack', (req, res, next) => {
+unicornResource.addMiddleware('talkSmack', (req, res, next) => {
   req.example = 'Make sure your old middleware functions call next()';
   next();
 });
@@ -143,12 +145,12 @@ The following standards are inspired by the work done on JSend. See there standa
   "status": "success",
   "code": 200,
   "data": {
-    "messages": [{
+    "unicorns": [{
       "_id": "110297391319273",
-      "content": "This is a good message.",
+      "content": "This is a good unicorn.",
     }, {
       "_id": "110297391319273",
-      "content": "This is another message.",
+      "content": "This is another unicorn.",
     }],
   }
 }
@@ -160,15 +162,15 @@ The following standards are inspired by the work done on JSend. See there standa
 {
   "status": "fail",
   "code": 400,
-  "message": "There was a validation error.",
+  "unicorn": "There was a validation error.",
   "data": {
     "title": {
-      "message": "Path `title` is required.",
+      "unicorn": "Path `title` is required.",
       "kind": "required",
       "path": "title",
     },
     "magic.wands": {
-      "message": "Path `magic.wands` (10) is less than minimum allowed value (1000).",
+      "unicorn": "Path `magic.wands` (10) is less than minimum allowed value (1000).",
       "kind": "min",
       "path": "magic.wands",
       "value": 10,
@@ -183,7 +185,7 @@ The following standards are inspired by the work done on JSend. See there standa
 {
   "status": "error",
   "code": 500,
-  "message": "The server pooped itself.",
+  "unicorn": "The server pooped itself.",
 }
 ```
 

@@ -6,8 +6,8 @@
   "scripts": {
     "clean": "rm -rf lib && mkdir lib",
     "build": "npm run clean && babel src -d lib",
-    "test": "npm run build && mocha --exit",
-    "test:watch": "npm run build && mocha --watch",
+    "test": "npm run build && NODE_ENV=test mocha --exit",
+    "test:watch": "npm run build && NODE_ENV=test mocha --watch",
     "release": "np",
     "prepublish": "npm run build",
     "dev": "nodemon --exec \"npm run build && node use/index.js\" --watch src --watch use --delay 1"
