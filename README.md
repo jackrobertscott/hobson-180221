@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD api with minimum configuration. Simply set add your schema to a resource and attach it to your Express app.
+Get up and running with a fully functioning CRUD api with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
 
 ## Features
 
@@ -79,7 +79,9 @@ const unicornResource = new Resource({
 unicornResource.attach(app);
 ```
 
-### Endpoints Provided
+### Endpoints
+
+#### Endpoints Provided
 
 The Hobson resource creates endpoints for you like you would on a regular RESTful api.
 
@@ -91,15 +93,7 @@ The Hobson resource creates endpoints for you like you would on a regular RESTfu
 | `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
-You can also disable any unwanted default endpoints when defining the resource.
-
-```js
-const unicornResource = new Resource({
-  name: 'unicorn',
-  schema: unicornSchema,
-  disable: ['find', 'remove'], // disabled
-});
-```
+#### Endpoint Customisation
 
 Here is how you create custom endpoints.
 
@@ -108,6 +102,16 @@ unicornResource.addEndpoint('talkSmack', {
   path: '/talk/smack',
   method: 'get',
   handler: () => 'Yo mama!',
+});
+```
+
+You can also disable any unwanted default endpoints when defining the resource.
+
+```js
+const unicornResource = new Resource({
+  name: 'unicorn',
+  schema: unicornSchema,
+  disable: ['find', 'remove'], // disabled
 });
 ```
 
