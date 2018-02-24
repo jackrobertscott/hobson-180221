@@ -38,7 +38,7 @@ class Resource {
    * @param {object} options options for the resource
    * @param {array} options.disable routes to disable
    */
-  constructor({ name, schema, disable = [] } = {}) {
+  constructor({ name, schema, disable = [], secure = true } = {}) {
     if (typeof name !== 'string') {
       throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
     }
@@ -49,6 +49,7 @@ class Resource {
       throw new Error('Parameter "options.disable" must be given to the Resource constructor as an array.');
     }
     this.setup = false;
+    this.secure = secure;
     this.resourceName = camelCase(singular(name));
     this.schema = schema;
     this.disable = new Set(disable);
@@ -249,6 +250,9 @@ class Resource {
     this.endpoints.forEach(({ path, method, handler }, key) => {
       if (this.disable.has(key)) {
         return; // don't add endpoint if it is disabled
+      }
+      if (!this.secure && !this.permissions.has(key)) {
+        this.permissions.set(key, () => true);
       }
       const resources = {
         model: this.resourceModel,
