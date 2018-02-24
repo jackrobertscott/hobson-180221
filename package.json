@@ -25,7 +25,7 @@
     "mongoose"
   ],
   "author": "Jack Scott <jack.rob.scott@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/jackrobertscott/hobson/issues"
   },
