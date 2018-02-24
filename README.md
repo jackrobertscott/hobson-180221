@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
+Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a hobson resource. Then attach it to your Express app, and your good to go!
 
 ## Features
 
@@ -19,25 +19,21 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing Hobson (and Mongoose, if you haven't already).
+Get started by installing hobson (and mongoose, if you haven't already).
 
 ```sh
-npm install --save hobson
+npm install --save hobson mongoose
 ```
 
-[Mongoose](https://github.com/Automattic/mongoose) **is required** as it gives us awesome schema validation features.
-
-```sh
-npm install --save mongoose
-```
+The [mongoose](https://github.com/Automattic/mongoose) schema lib is required as it gives us awesome schema validation features.
 
 **Note:** other options may be supported in the future.
 
 ## Usage
 
-Hobson takes advantage of the awesome powers of Mongoose for defining schemas and models.
+Hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
 
-**Step 1.** Create your Mongoose schema
+**Step 1.** Create your mongoose schema
 
 ```js
 const mongoose = require('mongoose');
@@ -61,7 +57,7 @@ const unicornSchema = new mongoose.Schema({
 module.exports = unicornSchema;
 ```
 
-**Step 2.** Create the Hobson resource and attach it to your Express app.
+**Step 2.** Create the hobson resource and attach it to your Express app.
 
 ```js
 const { Resource } = require('hobson');
@@ -83,7 +79,7 @@ unicornResource.attach(app);
 
 #### CRUD Endpoints Provided
 
-The Hobson resource creates endpoints for you like you would on a regular RESTful API.
+The hobson resource creates endpoints for you like you would on a regular RESTful API.
 
 | Type          | Method      | Endpoint               | Example                                 |
 |---------------|-------------|------------------------|-----------------------------------------|
