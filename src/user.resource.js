@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
-const HTTPStatus = require('http-status');
 const Resource = require('./resource');
-const { generateToken } = require('./utils/auth');
+const { login, register, logout } = require('./utils/user.controller');
 
 class UserResource extends Resource {
 
@@ -35,34 +34,18 @@ class UserResource extends Resource {
     return super.defaults
       .set('login', {
         path: '/action/login',
-        method: 'get',
-        handler: async ({ model, body: { email, password } }) => {
-          const user = await model.findOne({ email });
-          if (!user) {
-            const error = new Error('No user was found for the given email.');
-            error.code = HTTPStatus.NOT_FOUND;
-            throw error;
-          }
-          const match = await user.comparePassword(password);
-          if (!match) {
-            const error = new Error('Password is incorrect.');
-            error.code = HTTPStatus.NOT_FOUND;
-            throw error;
-          }
-          return {
-            auth: {
-              token: generateToken(user),
-              id: user.id,
-              email: user.email,
-              user,
-            },
-          };
-        },
+        method: 'post',
+        handler: login,
+      })
+      .set('register', {
+        path: '/action/register',
+        method: 'post',
+        handler: register,
       })
       .set('logout', {
         path: '/action/login',
         method: 'get',
-        handler: () => ({ auth: null }),
+        handler: logout,
       });
   }
 
