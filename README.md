@@ -52,6 +52,7 @@ export default messageSchema;
 Create the resource.
 
 ```js
+import { Resource } from 'hobson';
 import messageSchema from './messageSchema';
 
 const messageResource = new Resource({
