@@ -73,13 +73,13 @@ unicornResource.attach(app);
 
 Call the endpoints like you would on a regular RESTful api.
 
-| Type          |             | Endpoint           | Example                             |
-|---------------|-------------|--------------------|-------------------------------------|
-| `find`        | get         | `/cats`            | `/cats?filter[color]=white`         |
-| `findOne`     | get         | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
-| `create`      | post        | `/cats`            | `/cats`                             |
-| `update`      | patch       | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
-| `remove`      | delete      | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
+| Type          | Method      | Endpoint               | Example                                 |
+|---------------|-------------|------------------------|-----------------------------------------|
+| `find`        | get         | `/unicorns`            | `/unicorns?filter[color]=white`         |
+| `findOne`     | get         | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `create`      | post        | `/unicorns`            | `/unicorns`                             |
+| `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
 Disable any default endpoints when defining the resource.
 
@@ -151,13 +151,16 @@ The following standards are inspired by the work done on JSend. See there standa
   "status": "success",
   "code": 200,
   "data": {
-    "unicorns": [{
-      "_id": "110297391319273",
-      "content": "This is a good unicorn.",
-    }, {
-      "_id": "110297391319273",
-      "content": "This is another unicorn.",
-    }],
+    "unicorns": [
+      {
+        "_id": "110297391319273",
+        "content": "This is a good unicorn.",
+      },
+      {
+        "_id": "110297391319273",
+        "content": "This is another unicorn.",
+      }
+    ],
   }
 }
 ```
@@ -168,7 +171,7 @@ The following standards are inspired by the work done on JSend. See there standa
 {
   "status": "fail",
   "code": 400,
-  "unicorn": "There was a validation error.",
+  "message": "There was a validation error.",
   "data": {
     "title": {
       "unicorn": "Path `title` is required.",
@@ -191,7 +194,7 @@ The following standards are inspired by the work done on JSend. See there standa
 {
   "status": "error",
   "code": 500,
-  "unicorn": "The server pooped itself.",
+  "message": "The server pooped itself.",
 }
 ```
 
