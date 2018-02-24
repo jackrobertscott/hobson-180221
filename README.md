@@ -19,8 +19,10 @@ RESTful endpoint features:
 
 ## Install
 
+Get started by installing hobson and mongoose. Mongoose is required as it gives us awesome schema validation features.
+
 ```sh
-$ npm i -S hobson mongoose
+npm i -S hobson mongoose
 ```
 
 ## Usage
