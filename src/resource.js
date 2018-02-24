@@ -38,19 +38,34 @@ class Resource {
    * @param {object} options options for the resource
    * @param {array} options.disable routes to disable
    */
-  constructor({ name, schema, disable = [], unsecure = false } = {}) {
+  constructor({
+    name,
+    schema,
+    disable = [],
+    unsecure = false,
+    modelName,
+    address,
+  } = {}) {
     if (typeof name !== 'string') {
-      throw new Error('Parameter "resourceName" must be given to the Resource constructor as string.');
+      throw new Error('Parameter "resourceName" must be given to the Resource constructor as a string.');
     }
     if (typeof schema !== 'object') {
-      throw new Error('Parameter "schema" must be given to the Resource constructor as mongoose schema.');
+      throw new Error('Parameter "schema" must be given to the Resource constructor as a mongoose schema.');
     }
     if (!Array.isArray(disable)) {
-      throw new Error('Parameter "options.disable" must be given to the Resource constructor as an array.');
+      throw new Error('Parameter "disable" must be given to the Resource constructor as an array.');
+    }
+    if (modelName && typeof modelName !== 'string') {
+      throw new Error('Parameter "modelName" must be given to the Resource constructor as a string.');
+    }
+    if (address && typeof address !== 'string') {
+      throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
     }
     this.setup = false;
     this.unsecure = unsecure;
     this.resourceName = camelCase(singular(name));
+    this.address = address || `/${camelCase(plural(name))}`;
+    this.modelName = modelName || pascalCase(singular(name));
     this.schema = schema;
     this.disable = new Set(disable);
     this.endpoints = new Map([...this.defaults.entries()].map(Resource.formatEndpoint));
@@ -58,27 +73,6 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
-  }
-
-  /**
-   * Set the name of the property used to hold an array of items.
-   */
-  get manyName() {
-    return plural(this.resourceName);
-  }
-
-  /**
-   * Set the name of the property used to hold an singular of item.
-   */
-  get singleName() {
-    return singular(this.resourceName);
-  }
-
-  /**
-   * Set the name of the property used to set the mongodb collection.
-   */
-  get modelName() {
-    return pascalCase(this.resourceName);
   }
 
   /**
@@ -279,9 +273,12 @@ class Resource {
       throw new Error('Parameter "app" must be given provided as an express app instance.');
     }
     if (!this.setup) {
-      throw new Error('Please compile the resource before it is attached to an app.');
+      this.compile();
     }
-    app.use(`/${this.manyName}`, this.router);
+    process.nextTick(() => {
+      // ensure everything is setup before connecting
+      app.use(this.address, this.router);
+    });
   }
 
 }

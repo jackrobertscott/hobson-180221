@@ -84,4 +84,4 @@ example
     Object.assign(context, { messageTwo: 'Jack is cool' });
   });
 
-module.exports = example.compile();
+module.exports = example;
