@@ -1,10 +1,10 @@
 # hobson
 
-> Lightweight, minimalistic approach to fully functioning RESTful endpoints in [Express](https://github.com/expressjs/express/).
+> Lightweight, minimalistic approach to RESTful endpoints in [express](https://github.com/expressjs/express/).
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a hobson resource. Then attach it to your Express app, and your good to go!
+Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a hobson resource. Then attach it to your express app, and your good to go!
 
 ## Features
 
@@ -14,7 +14,7 @@ RESTful endpoint features:
 - Custom endpoints can be added
 - Endpoints are protected by default
 - Provide permission functions to allow access
-- Mongoose model schemas
+- mongoose model schemas
 - Pre and post hooks to all endpoints
 
 ## Install
@@ -31,7 +31,7 @@ The [mongoose](https://github.com/Automattic/mongoose) schema lib is required as
 
 ## Usage
 
-Hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
+hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 **Step 1.** Create your mongoose schema
 
@@ -57,7 +57,7 @@ const unicornSchema = new mongoose.Schema({
 module.exports = unicornSchema;
 ```
 
-**Step 2.** Create the hobson resource and attach it to your Express app.
+**Step 2.** Create the hobson resource and attach it to your express app.
 
 ```js
 const { Resource } = require('hobson');
