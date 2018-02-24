@@ -69,6 +69,8 @@ const unicornResource = new Resource({
 unicornResource.attach(app);
 ```
 
+### Endpoints Provided
+
 Call the endpoints like you would on a regular RESTful api.
 
 | Type          |             | Endpoint           | Example                             |
@@ -99,6 +101,8 @@ unicornResource.addEndpoint('talkSmack', {
 });
 ```
 
+### Authentication
+
 Routes are **protected by default**. Provide permission functions to give access to your users.
 
 ```js
@@ -110,6 +114,8 @@ unicornResource
     return user.role === ROLE_ADMIN; // access given to only admins
   });
 ```
+
+### Logic and Hooks
 
 Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
 
@@ -132,7 +138,7 @@ unicornResource.addMiddleware('talkSmack', (req, res, next) => {
 });
 ```
 
-## Endpoint Standards
+## Response Standards
 
 Endpoints should return information is a specific format that is easy to read on the client.
 
