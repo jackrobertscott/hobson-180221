@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD api, with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
+Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
 
 ## Features
 
@@ -19,7 +19,7 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing hobson (and Mongoose, if you haven't already).
+Get started by installing Hobson (and Mongoose, if you haven't already).
 
 ```sh
 npm install --save hobson
@@ -83,7 +83,7 @@ unicornResource.attach(app);
 
 #### Endpoints Provided
 
-The Hobson resource creates endpoints for you, like you would on a regular RESTful api.
+The Hobson resource creates endpoints for you like you would on a regular RESTful API.
 
 | Type          | Method      | Endpoint               | Example                                 |
 |---------------|-------------|------------------------|-----------------------------------------|
@@ -131,7 +131,7 @@ unicornResource
 
 ### Logic and Hooks
 
-Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
+Provide hooks to your endpoints which will run before and after the main handler. There is also a helpful `context` object which you can use to assign data to access throughout your function chain.
 
 ```js
 unicornResource
@@ -143,7 +143,7 @@ unicornResource
   })
 ```
 
-You can also use old express middleware too. When added, these will be run before all the other functions.
+You can also use old express middleware too. When added, these will run before all the other functions.
 
 ```js
 unicornResource.addMiddleware('talkSmack', (req, res, next) => {
