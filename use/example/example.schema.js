@@ -10,6 +10,12 @@ const exampleSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  magic: {
+    wands: {
+      type: Number,
+      min: 1000,
+    },
+  },
 });
 
 module.exports = exampleSchema;

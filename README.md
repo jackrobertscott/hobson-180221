@@ -95,12 +95,16 @@ messageResource.addEndpoint('talkSmack', {
 });
 ```
 
-Routes are protected by default. Provide permission functions to give access to your users.
+Routes are **protected by default**. Provide permission functions to give access to your users.
 
 ```js
-messageResource.addPermission('talkSmack', ({ user }) => {
-  return user.role === ROLE_ADMIN;
-});
+messageResource
+  .addPermission('find', ({ user }) => {
+    return true; // access given to everyone
+  })
+  .addPermission('talkSmack', ({ user }) => {
+    return user.role === ROLE_ADMIN; // access given to only admins
+  });
 ```
 
 Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
@@ -128,12 +132,14 @@ messageResource.addMiddleware('talkSmack', (req, res, next) => {
 
 Endpoints should return information is a specific format that is easy to read on the client.
 
+The following standards are inspired by the work done on JSend. See there standards [here](https://labs.omniti.com/labs/jsend).
+
 ### Success
 
 ```json
 {
   "status": "success",
-  "code": "200",
+  "code": 200,
   "data": {
     "messages": [{
       "_id": "110297391319273",
@@ -150,16 +156,21 @@ Endpoints should return information is a specific format that is easy to read on
 
 ```json
 {
-  "status": "failed",
-  "code": "400",
+  "status": "fail",
+  "code": 400,
+  "message": "There was a validation error.",
   "data": {
-    "tite": [{
-      "type": "required",
-      "message": "The title field is required.",
-    }, {
-      "type": "maxLength",
-      "message": "The title field must be less than 20 charaters.",
-    }],
+    "title": {
+      "message": "Path `title` is required.",
+      "kind": "required",
+      "path": "title",
+    },
+    "magic.wands": {
+      "message": "Path `magic.wands` (10) is less than minimum allowed value (1000).",
+      "kind": "min",
+      "path": "magic.wands",
+      "value": 10,
+    }
   }
 }
 ```
@@ -168,8 +179,17 @@ Endpoints should return information is a specific format that is easy to read on
 
 ```json
 {
-  "status": "errored",
-  "code": "500",
-  "message": "The server pooped itself."
+  "status": "error",
+  "code": 500,
+  "message": "The server pooped itself.",
 }
 ```
+
+## Maintainers
+
+- [Jack Scott](https://github.com/jackrobertscott)
+- [Thomas Rayden](https://github.com/thomasraydeniscool)
+
+## License
+
+MIT

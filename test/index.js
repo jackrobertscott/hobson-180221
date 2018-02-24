@@ -48,6 +48,13 @@ describe('Standard routes', () => {
     .expect(200)
     .expect(({ body: { data } }) => expect(data.example).to.have.property('comments', 15)));
 
+  it('should fail because the data is not valid', () => server.post('/examples')
+    .set('Accept', 'application/json')
+    .send({})
+    .expect('Content-Type', /json/)
+    .expect(400)
+    .expect(({ body: { data } }) => expect(data.title).to.have.property('kind', 'required')));
+
   it('should update an example', () => server.patch(`/examples/${String(examples[0].id)}`)
     .set('Accept', 'application/json')
     .send({

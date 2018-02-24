@@ -52,11 +52,15 @@ module.exports.checkExists = checkExists;
  */
 function formatResponse(data) {
   if (data instanceof Error) {
-    return {
+    const error = {
       status: 'error',
       code: data.code || 500,
-      error: data.message || 'There was an error on the server.',
+      message: data.message || 'There was an error on the server.',
     };
+    if (data.data) {
+      error.data = data.data;
+    }
+    return error;
   }
   return {
     status: 'success',
@@ -80,7 +84,7 @@ function middlify(middleware, resources, end = false) {
     ...resources,
   }))()
     .then(data => end ? res.status(200).json(formatResponse(data)) : next())
-    .catch(error => res.status(error.code || 500).json(module.exports.formatResponse(error)));
+    .catch(error => res.status(error.code || 500).json(formatResponse(error)));
 }
 module.exports.middlify = middlify;
 
@@ -93,7 +97,18 @@ function hookify(key, handler, preHooks, postHooks) {
       const tasks = preHooks.get(key).map(hook => hook(...args));
       await Promise.all(tasks);
     }
-    const data = await handler(...args);
+    let data;
+    try {
+      data = await handler(...args);
+    } catch (e) {
+      if (e && e.name === 'ValidationError') {
+        const error = new Error(e._message || 'Request validation failed');
+        error.code = HTTPStatus.BAD_REQUEST;
+        error.data = e.errors;
+        throw error;
+      }
+      throw e;
+    }
     if (postHooks.has(key)) {
       const tasks = postHooks.get(key).map(hook => hook({ ...args[0], data }, ...args.slice(1)));
       await Promise.all(tasks);
