@@ -33,17 +33,17 @@ class UserResource extends Resource {
   get defaults() {
     return super.defaults
       .set('login', {
-        path: '/action/login',
+        path: '/login',
         method: 'post',
         handler: login,
       })
       .set('register', {
-        path: '/action/register',
+        path: '/register',
         method: 'post',
         handler: register,
       })
       .set('logout', {
-        path: '/action/login',
+        path: '/logout',
         method: 'get',
         handler: logout,
       });
