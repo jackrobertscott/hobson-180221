@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD api with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
+Get up and running with a fully functioning CRUD api, with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
 
 ## Features
 
@@ -19,7 +19,7 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing hobson and mongoose (if you haven't already).
+Get started by installing hobson (and Mongoose, if you haven't already).
 
 ```sh
 npm install --save hobson
@@ -83,7 +83,7 @@ unicornResource.attach(app);
 
 #### Endpoints Provided
 
-The Hobson resource creates endpoints for you like you would on a regular RESTful api.
+The Hobson resource creates endpoints for you, like you would on a regular RESTful api.
 
 | Type          | Method      | Endpoint               | Example                                 |
 |---------------|-------------|------------------------|-----------------------------------------|
@@ -95,7 +95,7 @@ The Hobson resource creates endpoints for you like you would on a regular RESTfu
 
 #### Endpoint Customisation
 
-Here is how you create custom endpoints.
+Here is how you add custom endpoints to the resource.
 
 ```js
 unicornResource.addEndpoint('talkSmack', {
@@ -105,7 +105,7 @@ unicornResource.addEndpoint('talkSmack', {
 });
 ```
 
-You can also disable any unwanted default endpoints when defining the resource.
+You can also disable any, unwanted, default endpoints when you define the resource.
 
 ```js
 const unicornResource = new Resource({
@@ -143,7 +143,7 @@ unicornResource
   })
 ```
 
-Use old express middleware too. This will be run before all other functions.
+You can also use old express middleware too. When added, these will be run before all the other functions.
 
 ```js
 unicornResource.addMiddleware('talkSmack', (req, res, next) => {
@@ -154,7 +154,7 @@ unicornResource.addMiddleware('talkSmack', (req, res, next) => {
 
 ## Response Standards
 
-Endpoints should return information is a specific format that is easy to read on the client.
+Endpoints should return information in a specific format so that it is easy to read on the client.
 
 The following standards are inspired by the work done on JSend. See there standards [here](https://labs.omniti.com/labs/jsend).
 
