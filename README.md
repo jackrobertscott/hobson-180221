@@ -31,13 +31,13 @@ npm install --save hobson
 npm install --save mongoose
 ```
 
-###### Other options may be supported in the future.
+**Note:** other options may be supported in the future.
 
 ## Usage
 
 Hobson takes advantage of the awesome powers of Mongoose for defining schemas and models.
 
-1. Create your Mongoose schema
+**Step 1.** Create your Mongoose schema
 
 ```js
 const mongoose = require('mongoose');
@@ -61,7 +61,7 @@ const unicornSchema = new mongoose.Schema({
 module.exports = unicornSchema;
 ```
 
-2. Create the Hobson resource and attach it to your Express app.
+**Step 2.** Create the Hobson resource and attach it to your Express app.
 
 ```js
 const { Resource } = require('hobson');
@@ -81,7 +81,7 @@ unicornResource.attach(app);
 
 ### Endpoints
 
-#### Endpoints Provided
+#### CRUD Endpoints Provided
 
 The Hobson resource creates endpoints for you like you would on a regular RESTful API.
 
@@ -93,7 +93,7 @@ The Hobson resource creates endpoints for you like you would on a regular RESTfu
 | `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
-#### Endpoint Customisation
+#### Custom Endpoints
 
 Here is how you add custom endpoints to the resource.
 
