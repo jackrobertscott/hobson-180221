@@ -2,7 +2,14 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkCompile, middlify, hookify, permissionify } = require('./utils/helpers');
+const {
+  checkString,
+  checkCompile,
+  middlify,
+  hookify,
+  permissionify,
+  orderRoutes,
+} = require('./utils/helpers');
 const {
   find,
   findOne,
@@ -240,26 +247,28 @@ class Resource {
     } catch (e) {
       this.resourceModel = mongoose.model(this.modelName, this.schema);
     }
-    this.router = Router();
-    this.endpoints.forEach(({ path, method, handler }, key) => {
-      if (this.disable.has(key)) {
-        return; // don't add endpoint if it is disabled
-      }
-      if (this.unsecure && !this.permissions.has(key)) {
-        // if the resource is "unsecure" and has no permission set then give public permission
-        this.permissions.set(key, [() => true]);
-      }
-      const resources = {
-        model: this.resourceModel,
-        context: {}, // empty object which can be used to pass information between middlewares
-      };
-      const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
-      const permission = middlify(permissionify(key, this.permissions), resources);
-      const hooked = hookify(key, handler, this.preHooks, this.postHooks);
-      const work = middlify(hooked, resources, true);
-      this.router[lowerCase(method)](path, ...middleware, permission, work);
-    });
     this.setup = true;
+    this.router = Router();
+    [...this.endpoints.entries()]
+      .sort(orderRoutes)
+      .forEach(([key, { path, method, handler }]) => {
+        if (this.disable.has(key)) {
+          return; // don't add endpoint if it is disabled
+        }
+        if (this.unsecure && !this.permissions.has(key)) {
+          // if the resource is "unsecure" and has no permission set then give public permission
+          this.permissions.set(key, [() => true]);
+        }
+        const resources = {
+          model: this.resourceModel,
+          context: {}, // empty object which can be used to pass information between middlewares
+        };
+        const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
+        const permission = middlify(permissionify(key, this.permissions), resources);
+        const hooked = hookify(key, handler, this.preHooks, this.postHooks);
+        const work = middlify(hooked, resources, true);
+        this.router[lowerCase(method)](path, ...middleware, permission, work);
+      });
     return this;
   }
 

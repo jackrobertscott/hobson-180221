@@ -14,7 +14,7 @@ const example = new Resource({
  */
 example
   .addEndpoint('smackTalk', {
-    path: '/smack/talk',
+    path: '/smacktalk',
     method: 'get',
     handler: async () => ({
       talk: [
@@ -33,7 +33,7 @@ example
     ],
   })
   .addEndpoint('niceTalk', {
-    path: '/nice/talk',
+    path: '/:nice/talk',
     method: 'get',
     handler: async () => ({
       talk: [
@@ -44,6 +44,14 @@ example
         'Hello! You smell nice.',
       ][Math.floor(Math.random() * 5)],
     }),
+    permissions: [
+      () => true,
+    ],
+  })
+  .addEndpoint('orderSort', {
+    path: '/order',
+    method: 'get',
+    handler: () => ({ hello: true }),
     permissions: [
       () => true,
     ],
