@@ -1,10 +1,10 @@
 # hobson
 
-> Lightweight, minimalistic approach to fully functioning RESTful endpoints.
+> Lightweight, minimalistic approach to fully functioning RESTful endpoints in [Express](https://github.com/expressjs/express/).
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD api with minimum configuration. Simply set add your schema to a resource and attach it to your app.
+Get up and running with a fully functioning CRUD api with minimum configuration. Simply set add your schema to a resource and attach it to your Express app.
 
 ## Features
 
@@ -25,15 +25,19 @@ Get started by installing hobson and mongoose (if you haven't already).
 npm install --save hobson
 ```
 
-Mongoose is required as it gives us awesome schema validation features.
+[Mongoose](https://github.com/Automattic/mongoose) **is required** as it gives us awesome schema validation features.
 
 ```sh
 npm install --save mongoose
 ```
 
+###### Other options may be supported in the future.
+
 ## Usage
 
-Takes advantage of the awesome powers of mongoose for defining schemas and models.
+Hobson takes advantage of the awesome powers of Mongoose for defining schemas and models.
+
+1. Create your Mongoose schema
 
 ```js
 const mongoose = require('mongoose');
@@ -57,7 +61,7 @@ const unicornSchema = new mongoose.Schema({
 module.exports = unicornSchema;
 ```
 
-Create the resource.
+2. Create the Hobson resource and attach it to your Express app.
 
 ```js
 const { Resource } = require('hobson');
@@ -77,7 +81,7 @@ unicornResource.attach(app);
 
 ### Endpoints Provided
 
-Call the endpoints like you would on a regular RESTful api.
+The Hobson resource creates endpoints for you like you would on a regular RESTful api.
 
 | Type          | Method      | Endpoint               | Example                                 |
 |---------------|-------------|------------------------|-----------------------------------------|
@@ -87,7 +91,7 @@ Call the endpoints like you would on a regular RESTful api.
 | `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
-Disable any default endpoints when defining the resource.
+You can also disable any unwanted default endpoints when defining the resource.
 
 ```js
 const unicornResource = new Resource({
@@ -97,7 +101,7 @@ const unicornResource = new Resource({
 });
 ```
 
-Create custom endpoints.
+Here is how you create custom endpoints.
 
 ```js
 unicornResource.addEndpoint('talkSmack', {
