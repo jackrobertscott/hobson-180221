@@ -10,7 +10,7 @@
     "test:watch": "npm run build && mocha --watch",
     "release": "np",
     "prepublish": "npm run build",
-    "dev": "NODE_ENV=development nodemon use/index.js --watch src --watch use"
+    "dev": "nodemon --exec \"npm run build && node use/index.js\" --watch src --watch use --delay 1"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
     "mongoose"
   ],
   "author": "Jack Scott <jack.rob.scott@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/jackrobertscott/hobson/issues"
   },
