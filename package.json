@@ -3,9 +3,6 @@
   "version": "0.1.1",
   "description": "Lightweight convention over configuration approach to RESTful endpoints using express.",
   "main": "src/index.js",
-  "engines": {
-    "node": ">=7.6"
-  },
   "scripts": {
     "clean": "rm -rf lib && mkdir lib",
     "build": "npm run clean && babel src -d lib",

@@ -1,5 +1,6 @@
 # hobson
-[![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson)
+
+[![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson)
 
 Lightweight node.js package which takes a convention over configuration approach to RESTful endpoints using express.
 
@@ -10,6 +11,7 @@ This package should allow you to create a fully working RESTful api with minimal
 ## Features
 
 RESTful endpoint features:
+
 - Optional CRUD endpoints provided by default
 - Custom endpoints can be added
 - Endpoints are protected by default
@@ -58,6 +60,26 @@ const messageResource = new Resource({
 messageResource.compile().attach(app);
 ```
 
+Call the endpoints like you would on a regular RESTful api.
+
+| Type          |             | Endpoint           | Example                             |
+|---------------|-------------|--------------------|-------------------------------------|
+| `find`        | get         | `/cats`            | `/cats?filter[color]=white`         |
+| `findOne`     | get         | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
+| `create`      | post        | `/cats`            | `/cats`                             |
+| `update`      | patch       | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
+| `remove`      | delete      | `/cats/:catId`     | `/cats/5a8ed7fabf4aabad60e41247`    |
+
+Disable any default endpoints when defining the resource.
+
+```js
+const messageResource = new Resource({
+  name: 'message',
+  schema: messageSchema,
+  disable: ['find', 'remove'], // disabled
+});
+```
+
 Create custom endpoints.
 
 ```js
@@ -101,7 +123,7 @@ messageResource.addMiddleware('talkSmack', (req, res, next) => {
 
 Endpoints should return information is a specific format that is easy to read on the client.
 
-**Success**
+### Success
 
 ```json
 {
@@ -119,7 +141,7 @@ Endpoints should return information is a specific format that is easy to read on
 }
 ```
 
-**Failed**
+### Failed
 
 ```json
 {
@@ -137,7 +159,7 @@ Endpoints should return information is a specific format that is easy to read on
 }
 ```
 
-**Error**
+### Error
 
 ```json
 {
@@ -146,5 +168,3 @@ Endpoints should return information is a specific format that is easy to read on
   "message": "The server pooped itself."
 }
 ```
-
-
