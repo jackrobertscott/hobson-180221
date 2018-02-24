@@ -188,12 +188,12 @@ The following standards are inspired by the work done on JSend. See there standa
   "message": "There was a validation error.",
   "data": {
     "title": {
-      "unicorn": "Path `title` is required.",
+      "message": "Path `title` is required.",
       "kind": "required",
       "path": "title",
     },
     "magic.wands": {
-      "unicorn": "Path `magic.wands` (10) is less than minimum allowed value (1000).",
+      "message": "Path `magic.wands` (10) is less than minimum allowed value (1000).",
       "kind": "min",
       "path": "magic.wands",
       "value": 10,

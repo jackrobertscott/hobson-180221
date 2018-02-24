@@ -78,7 +78,7 @@ describe('Standard routes', () => {
       expect(count).to.equal(2);
     }));
 
-  it('should get all examples', () => server.get('/examples/smack/talk')
+  it('should order the resource endpoints correctly', () => server.get('/examples/smacktalk')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(200)
