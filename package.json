@@ -1,11 +1,8 @@
 {
   "name": "hobson",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight convention over configuration approach to RESTful endpoints using express.",
   "main": "src/index.js",
-  "engines": {
-    "node": ">=7.6"
-  },
   "scripts": {
     "clean": "rm -rf lib && mkdir lib",
     "build": "npm run clean && babel src -d lib",
@@ -61,6 +58,7 @@
     "express": "^4.16.2",
     "helmet": "^3.11.0",
     "http-status": "^1.0.1",
+    "jsonwebtoken": "^8.1.1",
     "method-override": "^2.3.10",
     "mongoose": "^5.0.6",
     "morgan": "^1.9.0",

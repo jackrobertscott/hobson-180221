@@ -2,14 +2,14 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase, pascalCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkCompile, middlify, hookify, permissionify } = require('./util');
+const { checkString, checkCompile, middlify, hookify, permissionify } = require('./utils/helpers');
 const {
   find,
   findOne,
   create,
   update,
   remove,
-} = require('./controller');
+} = require('./utils/controller');
 
 class Resource {
 
@@ -138,6 +138,18 @@ class Resource {
     checkString(id, { message: `Endpoint id ${id} was not passed in as a string.` });
     if (typeof endpoint !== 'object') {
       throw new Error(`Endpoint data for ${id} must be an object.`);
+    }
+    if (endpoint.middleware && Array.isArray(endpoint.middleware)) {
+      endpoint.middleware.forEach(item => this.addMiddleware(id, item));
+    }
+    if (endpoint.preHooks && Array.isArray(endpoint.preHooks)) {
+      endpoint.preHooks.forEach(item => this.addPreHook(id, item));
+    }
+    if (endpoint.postHooks && Array.isArray(endpoint.postHooks)) {
+      endpoint.postHooks.forEach(item => this.addPostHook(id, item));
+    }
+    if (endpoint.permissions && Array.isArray(endpoint.permissions)) {
+      endpoint.permissions.forEach(item => this.addPermission(id, item));
     }
     const submission = Resource.formatEndpoint([id, endpoint]);
     this.endpoints.set(...submission);

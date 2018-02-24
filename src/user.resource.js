@@ -1,5 +1,7 @@
-const Resource = require('./resource');
 const bcrypt = require('bcryptjs');
+const HTTPStatus = require('http-status');
+const Resource = require('./resource');
+const { generateToken } = require('./utils/auth');
 
 class UserResource extends Resource {
 
@@ -34,8 +36,33 @@ class UserResource extends Resource {
       .set('login', {
         path: '/action/login',
         method: 'get',
-        handler: async () => ({ login: false }),
-        activate: [],
+        handler: async ({ model, body: { email, password } }) => {
+          const user = await model.findOne({ email });
+          if (!user) {
+            const error = new Error('No user was found for the given email.');
+            error.code = HTTPStatus.NOT_FOUND;
+            throw error;
+          }
+          const match = await user.comparePassword(password);
+          if (!match) {
+            const error = new Error('Password is incorrect.');
+            error.code = HTTPStatus.NOT_FOUND;
+            throw error;
+          }
+          return {
+            auth: {
+              token: generateToken(user),
+              id: user.id,
+              email: user.email,
+              user,
+            },
+          };
+        },
+      })
+      .set('logout', {
+        path: '/action/login',
+        method: 'get',
+        handler: () => ({ auth: null }),
       });
   }
 
