@@ -1,10 +1,10 @@
 # hobson
 
-> Lightweight, minimalistic approach to RESTful endpoints.
+> Lightweight, minimalistic approach to fully functioning RESTful endpoints in [Express](https://github.com/expressjs/express/).
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD api with minimum configuration. Simply set add your schema to a resource and attach it to your app.
+Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a Hobson resource. Then attach it to your Express app, and your good to go!
 
 ## Features
 
@@ -19,20 +19,30 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing hobson and mongoose. Mongoose is required as it gives us awesome schema validation features.
+Get started by installing Hobson (and Mongoose, if you haven't already).
 
 ```sh
-npm i -S hobson mongoose
+npm install --save hobson
 ```
+
+[Mongoose](https://github.com/Automattic/mongoose) **is required** as it gives us awesome schema validation features.
+
+```sh
+npm install --save mongoose
+```
+
+###### Other options may be supported in the future.
 
 ## Usage
 
-Takes advantage of the awesome powers of mongoose for defining schemas and models.
+Hobson takes advantage of the awesome powers of Mongoose for defining schemas and models.
+
+1. Create your Mongoose schema
 
 ```js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
-export const unicornSchema = new mongoose.Schema({
+const unicornSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
     ref: 'User', // same as userResource.modelName
@@ -48,14 +58,14 @@ export const unicornSchema = new mongoose.Schema({
 
 // custom mongoose functions, virtual properties, and more...
 
-export default unicornSchema;
+module.exports = unicornSchema;
 ```
 
-Create the resource.
+2. Create the Hobson resource and attach it to your Express app.
 
 ```js
-import { Resource } from 'hobson';
-import unicornSchema from './unicornSchema';
+const { Resource } = require('hobson');
+const unicornSchema = require('./unicornSchema');
 
 const unicornResource = new Resource({
   name: 'unicorn',
@@ -69,9 +79,11 @@ const unicornResource = new Resource({
 unicornResource.attach(app);
 ```
 
-### Endpoints Provided
+### Endpoints
 
-Call the endpoints like you would on a regular RESTful api.
+#### Endpoints Provided
+
+The Hobson resource creates endpoints for you like you would on a regular RESTful API.
 
 | Type          | Method      | Endpoint               | Example                                 |
 |---------------|-------------|------------------------|-----------------------------------------|
@@ -81,23 +93,25 @@ Call the endpoints like you would on a regular RESTful api.
 | `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
-Disable any default endpoints when defining the resource.
+#### Endpoint Customisation
 
-```js
-const unicornResource = new Resource({
-  name: 'unicorn',
-  schema: unicornSchema,
-  disable: ['find', 'remove'], // disabled
-});
-```
-
-Create custom endpoints.
+Here is how you add custom endpoints to the resource.
 
 ```js
 unicornResource.addEndpoint('talkSmack', {
   path: '/talk/smack',
   method: 'get',
   handler: () => 'Yo mama!',
+});
+```
+
+You can also disable any, unwanted, default endpoints when you define the resource.
+
+```js
+const unicornResource = new Resource({
+  name: 'unicorn',
+  schema: unicornSchema,
+  disable: ['find', 'remove'], // disabled
 });
 ```
 
@@ -117,7 +131,7 @@ unicornResource
 
 ### Logic and Hooks
 
-Provide hooks to your endpoints which will be run before and after the main handler. There is also a helpful `context` object which you can use to assign data to and access through out your function chain.
+Provide hooks to your endpoints which will run before and after the main handler. There is also a helpful `context` object which you can use to assign data to access throughout your function chain.
 
 ```js
 unicornResource
@@ -129,7 +143,7 @@ unicornResource
   })
 ```
 
-Use old express middleware too. This will be run before all other functions.
+You can also use old express middleware too. When added, these will run before all the other functions.
 
 ```js
 unicornResource.addMiddleware('talkSmack', (req, res, next) => {
@@ -140,7 +154,7 @@ unicornResource.addMiddleware('talkSmack', (req, res, next) => {
 
 ## Response Standards
 
-Endpoints should return information is a specific format that is easy to read on the client.
+Endpoints should return information in a specific format so that it is easy to read on the client.
 
 The following standards are inspired by the work done on JSend. See there standards [here](https://labs.omniti.com/labs/jsend).
 
