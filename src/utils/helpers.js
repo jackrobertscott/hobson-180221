@@ -136,3 +136,25 @@ function permissionify(key, permissions) {
   };
 }
 module.exports.permissionify = permissionify;
+
+/**
+ * Order express routes correctly so they execute correctly
+ */
+function orderRoutes(a, b) {
+  const aSegments = a[1].path.split('/').filter(segment => segment.length);
+  const bSegments = b[1].path.split('/').filter(segment => segment.length);
+  if (aSegments.length && aSegments.length === bSegments.length) {
+    let index = 0;
+    while (index < aSegments.length) {
+      if (aSegments[index].charAt(0) === ':' && bSegments[index].charAt(0) !== ':') {
+        return 1;
+      }
+      if (bSegments[index].charAt(0) === ':' && aSegments[index].charAt(0) !== ':') {
+        return -1;
+      }
+      index += 1;
+    }
+  }
+  return bSegments.length - aSegments.length;
+}
+module.exports.orderRoutes = orderRoutes;
