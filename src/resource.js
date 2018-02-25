@@ -284,10 +284,7 @@ class Resource {
     if (!this.setup) {
       this.compile();
     }
-    process.nextTick(() => {
-      // ensure everything is setup before connecting
-      app.use(this.address, this.router);
-    });
+    app.use(this.address, this.router);
   }
 
 }

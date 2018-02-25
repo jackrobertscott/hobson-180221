@@ -4,9 +4,6 @@ const exampleSchema = require('./example.schema');
 const example = new Resource({
   name: 'example',
   schema: exampleSchema,
-  options: {
-    timestamps: true,
-  },
 });
 
 /**
@@ -92,4 +89,4 @@ example
     Object.assign(context, { messageTwo: 'Jack is cool' });
   });
 
-module.exports = example;
+module.exports = example.compile();

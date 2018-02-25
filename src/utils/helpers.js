@@ -53,8 +53,8 @@ module.exports.checkExists = checkExists;
 function formatResponse(data) {
   if (data instanceof Error) {
     const error = {
-      status: 'error',
-      code: data.code || 500,
+      status: data.status || 'error',
+      code: data.code || HTTPStatus.INTERNAL_SERVER_ERROR,
       message: data.message || 'There was an error on the server.',
     };
     if (data.data) {
@@ -64,7 +64,7 @@ function formatResponse(data) {
   }
   return {
     status: 'success',
-    code: 200,
+    code: HTTPStatus.OK,
     data,
   };
 }
@@ -84,7 +84,7 @@ function middlify(middleware, resources, end = false) {
     ...resources,
   }))()
     .then(data => end ? res.status(200).json(formatResponse(data)) : next())
-    .catch(error => res.status(error.code || 500).json(formatResponse(error)));
+    .catch(error => res.status(error.code || HTTPStatus.INTERNAL_SERVER_ERROR).json(formatResponse(error)));
 }
 module.exports.middlify = middlify;
 
@@ -105,6 +105,7 @@ function hookify(key, handler, preHooks, postHooks) {
         const error = new Error(e._message || 'Request validation failed');
         error.code = HTTPStatus.BAD_REQUEST;
         error.data = e.errors;
+        error.status = 'fail';
         throw error;
       }
       throw e;

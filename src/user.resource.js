@@ -1,13 +1,21 @@
 const bcrypt = require('bcryptjs');
-const HTTPStatus = require('http-status');
 const Resource = require('./resource');
-const { generateToken } = require('./utils/auth');
+const { login, register, logout } = require('./utils/user');
 
 class UserResource extends Resource {
 
   constructor(...args) {
     super(...args);
+    const { secret } = args[0];
+    if (typeof secret !== 'string') {
+      throw new Error('Parameter "secret" must be given to the UserResource constructor as a string.');
+    }
+    this.secret = secret;
     this.schema.add({
+      email: {
+        type: String,
+        required: true,
+      },
       password: {
         type: String,
         required: true,
@@ -29,41 +37,24 @@ class UserResource extends Resource {
     this.schema.methods.comparePassword = function comparePassword(candidate) {
       return bcrypt.compare(candidate, this.password);
     };
-  }
-
-  get defaults() {
-    return super.defaults
-      .set('login', {
-        path: '/action/login',
-        method: 'get',
-        handler: async ({ model, body: { email, password } }) => {
-          const user = await model.findOne({ email });
-          if (!user) {
-            const error = new Error('No user was found for the given email.');
-            error.code = HTTPStatus.NOT_FOUND;
-            throw error;
-          }
-          const match = await user.comparePassword(password);
-          if (!match) {
-            const error = new Error('Password is incorrect.');
-            error.code = HTTPStatus.NOT_FOUND;
-            throw error;
-          }
-          return {
-            auth: {
-              token: generateToken(user),
-              id: user.id,
-              email: user.email,
-              user,
-            },
-          };
-        },
-      })
-      .set('logout', {
-        path: '/action/login',
-        method: 'get',
-        handler: () => ({ auth: null }),
-      });
+    this.addEndpoint('login', {
+      path: '/login',
+      method: 'post',
+      handler: login(this.secret),
+      permissions: [() => true],
+    });
+    this.addEndpoint('register', {
+      path: '/register',
+      method: 'post',
+      handler: register(this.secret),
+      permissions: [() => true],
+    });
+    this.addEndpoint('logout', {
+      path: '/logout',
+      method: 'get',
+      handler: logout(),
+      permissions: [() => true],
+    });
   }
 
 }

@@ -16,6 +16,8 @@ const exampleSchema = new mongoose.Schema({
       min: 1000,
     },
   },
+}, {
+  timestamps: true,
 });
 
 module.exports = exampleSchema;

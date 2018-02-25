@@ -4,9 +4,7 @@ const userSchema = require('./user.schema');
 const user = new UserResource({
   name: 'user',
   schema: userSchema,
-  options: {
-    timestamps: true,
-  },
+  secret: 'supersecretsecret',
 });
 
-module.exports = user;
+module.exports = user.compile();

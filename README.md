@@ -1,6 +1,6 @@
 # hobson
 
-> Lightweight, minimalistic approach to fully functioning RESTful endpoints in [express](https://github.com/expressjs/express/).
+> Lightweight, minimalistic approach to RESTful endpoints in [express](https://github.com/expressjs/express/).
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -81,13 +81,13 @@ unicornResource.attach(app);
 
 The hobson resource creates endpoints for you like you would on a regular RESTful API.
 
-| Type          | Method      | Endpoint               | Example                                 |
-|---------------|-------------|------------------------|-----------------------------------------|
-| `find`        | get         | `/unicorns`            | `/unicorns?filter[color]=white`         |
-| `findOne`     | get         | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
-| `create`      | post        | `/unicorns`            | `/unicorns`                             |
-| `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
-| `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| Type          | Method      | Endpoint                | Example                                 |
+|---------------|-------------|-------------------------|-----------------------------------------|
+| `find`        | get         | `/unicorns`             | `/unicorns?filter[color]=purple`        |
+| `findOne`     | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `create`      | post        | `/unicorns`             | `/unicorns`                             |
+| `update`      | patch       | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `remove`      | delete      | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
 #### Custom Endpoints
 
