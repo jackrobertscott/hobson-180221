@@ -1,6 +1,6 @@
 # hobson
 
-> Lightweight, minimalistic approach to fully functioning RESTful endpoints in [express](https://github.com/expressjs/express/).
+> Lightweight, minimalistic approach to RESTful endpoints in [express](https://github.com/expressjs/express/).
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
