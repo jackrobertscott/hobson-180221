@@ -4,9 +4,6 @@ const exampleSchema = require('./example.schema');
 const example = new Resource({
   name: 'example',
   schema: exampleSchema,
-  options: {
-    timestamps: true,
-  },
 });
 
 /**

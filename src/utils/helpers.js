@@ -64,7 +64,7 @@ function formatResponse(data) {
   }
   return {
     status: 'success',
-    code: 200,
+    code: HTTPStatus.OK,
     data,
   };
 }
@@ -84,7 +84,7 @@ function middlify(middleware, resources, end = false) {
     ...resources,
   }))()
     .then(data => end ? res.status(200).json(formatResponse(data)) : next())
-    .catch(error => res.status(error.code || 500).json(formatResponse(error)));
+    .catch(error => res.status(error.code || HTTPStatus.INTERNAL_SERVER_ERROR).json(formatResponse(error)));
 }
 module.exports.middlify = middlify;
 

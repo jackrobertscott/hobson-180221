@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { expect } = require('chai');
 const request = require('supertest');
+const HTTPStatus = require('http-status');
 const app = require('../use/app');
 const exampleResource = require('../use/example/example.resource');
 
@@ -9,7 +10,7 @@ exampleResource.attach(app);
 const Example = exampleResource.model;
 const server = request(app);
 
-describe('Standard routes', () => {
+describe('Standard resource', () => {
 
   let examples;
 
@@ -22,8 +23,7 @@ describe('Standard routes', () => {
       title: 'Example title two.',
       comments: 10,
     }].map(data => Example.create(data));
-    const items = await Promise.all(tasks);
-    examples = items;
+    examples = await Promise.all(tasks);
   });
 
   it('should have the correct resource name', () => expect(exampleResource.resourceName).to.equal('example'));
@@ -33,20 +33,20 @@ describe('Standard routes', () => {
   it('should get all examples', () => server.get('/examples')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(2);
     }));
 
   it('should get one example', () => server.get(`/examples/${String(examples[0].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 5);
     }));
 
@@ -57,10 +57,10 @@ describe('Standard routes', () => {
       comments: 15,
     })
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 15);
     }));
 
@@ -68,10 +68,10 @@ describe('Standard routes', () => {
     .set('Accept', 'application/json')
     .send({})
     .expect('Content-Type', /json/)
-    .expect(400)
+    .expect(HTTPStatus.BAD_REQUEST)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('fail');
-      expect(code).to.equal(400);
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
       expect(data.title).to.have.property('kind', 'required');
     }));
 
@@ -81,20 +81,20 @@ describe('Standard routes', () => {
       comments: 25,
     })
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 25);
     }));
 
   it('should get delete an example', () => server.delete(`/examples/${String(examples[1].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.example).to.equal(null);
     })
     .then(async () => {
@@ -105,10 +105,10 @@ describe('Standard routes', () => {
   it('should order the resource endpoints correctly', () => server.get('/examples/smacktalk')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
-    .expect(200)
+    .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
-      expect(code).to.equal(200);
+      expect(code).to.equal(HTTPStatus.OK);
       expect(data.attach).to.equal('hello');
     }));
 

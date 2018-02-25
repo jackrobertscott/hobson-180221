@@ -1,4 +1,8 @@
+# Dependencies
 node_modules
-yarn.lock
-.env
+
+# Build
 lib
+
+# Environment
+.env

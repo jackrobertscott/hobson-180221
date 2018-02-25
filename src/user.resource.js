@@ -1,12 +1,21 @@
 const bcrypt = require('bcryptjs');
 const Resource = require('./resource');
-const { login, register, logout } = require('./utils/user.controller');
+const { login, register, logout } = require('./utils/user');
 
 class UserResource extends Resource {
 
   constructor(...args) {
     super(...args);
+    const { secret } = args[0];
+    if (typeof secret !== 'string') {
+      throw new Error('Parameter "secret" must be given to the UserResource constructor as a string.');
+    }
+    this.secret = secret;
     this.schema.add({
+      email: {
+        type: String,
+        required: true,
+      },
       password: {
         type: String,
         required: true,
@@ -28,25 +37,24 @@ class UserResource extends Resource {
     this.schema.methods.comparePassword = function comparePassword(candidate) {
       return bcrypt.compare(candidate, this.password);
     };
-  }
-
-  get defaults() {
-    return super.defaults
-      .set('login', {
-        path: '/login',
-        method: 'post',
-        handler: login(),
-      })
-      .set('register', {
-        path: '/register',
-        method: 'post',
-        handler: register(),
-      })
-      .set('logout', {
-        path: '/logout',
-        method: 'get',
-        handler: logout(),
-      });
+    this.addEndpoint('login', {
+      path: '/login',
+      method: 'post',
+      handler: login(this.secret),
+      permissions: [() => true],
+    });
+    this.addEndpoint('register', {
+      path: '/register',
+      method: 'post',
+      handler: register(this.secret),
+      permissions: [() => true],
+    });
+    this.addEndpoint('logout', {
+      path: '/logout',
+      method: 'get',
+      handler: logout(),
+      permissions: [() => true],
+    });
   }
 
 }

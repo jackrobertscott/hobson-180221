@@ -1,14 +1,12 @@
 const jwt = require('jsonwebtoken');
 const HTTPStatus = require('http-status');
 
-const secret = 'supersecretsecret';
-
 /**
  * Generate an authentication token which can be sent to the client to
  * verify future requests.
  */
-function generateToken({ id, email, role }) {
-  return jwt.sign({ id, email, role }, {
+function generateToken({ id, email, role }, secret) {
+  return jwt.sign({ id, email, role }, secret, {
     expiresIn: '1m',
   });
 }
@@ -17,10 +15,22 @@ module.exports.generateToken = generateToken;
 /**
  * Decode a jwt token.
  */
-function decodeToken(token) {
+function decodeToken(token, secret) {
   return jwt.verify(token, secret);
 }
 module.exports.decodeToken = decodeToken;
+
+/**
+ * Package the authentication.
+ */
+function authPackage(user, secret) {
+  return {
+    token: generateToken(user, secret),
+    id: user.id,
+    email: user.email,
+  };
+}
+module.exports.authPackage = authPackage;
 
 /**
  * Authenticate a user.
