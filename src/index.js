@@ -1,9 +1,9 @@
 require('babel-polyfill');
 
 const Resource = require('./resource');
-// const UserResource = require('./user.resource');
+const UserResource = require('./user.resource');
 
 module.exports = {
   Resource,
-  // UserResource,
+  UserResource,
 };

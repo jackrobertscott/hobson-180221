@@ -9,4 +9,4 @@ const user = new UserResource({
   },
 });
 
-module.exports = user;
+module.exports = user.compile();

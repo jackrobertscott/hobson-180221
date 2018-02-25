@@ -35,17 +35,17 @@ class UserResource extends Resource {
       .set('login', {
         path: '/login',
         method: 'post',
-        handler: login,
+        handler: login(),
       })
       .set('register', {
         path: '/register',
         method: 'post',
-        handler: register,
+        handler: register(),
       })
       .set('logout', {
         path: '/logout',
         method: 'get',
-        handler: logout,
+        handler: logout(),
       });
   }
 

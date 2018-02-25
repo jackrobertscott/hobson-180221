@@ -2,8 +2,8 @@ const HTTPStatus = require('http-status');
 
 const { generateToken } = require('./auth');
 
-function login({ model, body: { email, password } }) {
-  return async () => {
+function login() {
+  return async ({ model, body: { email, password } }) => {
     const user = await model.findOne({ email });
     if (!user) {
       const error = new Error('No user was found for the given email.');
@@ -28,8 +28,8 @@ function login({ model, body: { email, password } }) {
 }
 module.exports.login = login;
 
-function register({ model, body }) {
-  return async () => {
+function register() {
+  return async ({ model, body }) => {
     const user = await model.create(body);
     if (!user) {
       const error = new Error('Failed to create new user.');
@@ -49,8 +49,6 @@ function register({ model, body }) {
 module.exports.register = register;
 
 function logout() {
-  return async () => ({
-    auth: null,
-  });
+  return async () => console.log('test');
 }
 module.exports.logout = logout;
