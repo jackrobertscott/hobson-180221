@@ -14,7 +14,7 @@ RESTful endpoint features:
 - Custom endpoints can be added
 - Endpoints are protected by default
 - Provide permission functions to allow access
-- mongoose model schemas
+- Mongoose model schemas
 - Pre and post hooks to all endpoints
 
 ## Install
@@ -31,7 +31,7 @@ The [mongoose](https://github.com/Automattic/mongoose) schema lib is required as
 
 ## Usage
 
-hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
+Hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
 
 **Step 1.** Create your mongoose schema
 
