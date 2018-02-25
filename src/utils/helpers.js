@@ -53,8 +53,8 @@ module.exports.checkExists = checkExists;
 function formatResponse(data) {
   if (data instanceof Error) {
     const error = {
-      status: 'error',
-      code: data.code || 500,
+      status: data.status || 'error',
+      code: data.code || HTTPStatus.INTERNAL_SERVER_ERROR,
       message: data.message || 'There was an error on the server.',
     };
     if (data.data) {
@@ -105,6 +105,7 @@ function hookify(key, handler, preHooks, postHooks) {
         const error = new Error(e._message || 'Request validation failed');
         error.code = HTTPStatus.BAD_REQUEST;
         error.data = e.errors;
+        error.status = 'fail';
         throw error;
       }
       throw e;
