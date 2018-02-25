@@ -81,13 +81,13 @@ unicornResource.attach(app);
 
 The hobson resource creates endpoints for you like you would on a regular RESTful API.
 
-| Type          | Method      | Endpoint               | Example                                 |
-|---------------|-------------|------------------------|-----------------------------------------|
-| `find`        | get         | `/unicorns`            | `/unicorns?filter[color]=white`         |
-| `findOne`     | get         | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
-| `create`      | post        | `/unicorns`            | `/unicorns`                             |
-| `update`      | patch       | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
-| `remove`      | delete      | `/unicorns/:catId`     | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| Type          | Method      | Endpoint                | Example                                 |
+|---------------|-------------|-------------------------|-----------------------------------------|
+| `find`        | get         | `/unicorns`             | `/unicorns?filter[color]=purple`        |
+| `findOne`     | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `create`      | post        | `/unicorns`             | `/unicorns`                             |
+| `update`      | patch       | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `remove`      | delete      | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 
 #### Custom Endpoints
 
