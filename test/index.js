@@ -34,13 +34,21 @@ describe('Standard routes', () => {
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.examples).to.have.lengthOf(2)));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.examples).to.have.lengthOf(2);
+    }));
 
   it('should get one example', () => server.get(`/examples/${String(examples[0].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.example).to.have.property('comments', 5)));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.example).to.have.property('comments', 5);
+    }));
 
   it('should create an example', () => server.post('/examples')
     .set('Accept', 'application/json')
@@ -50,14 +58,22 @@ describe('Standard routes', () => {
     })
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.example).to.have.property('comments', 15)));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.example).to.have.property('comments', 15);
+    }));
 
   it('should fail because the data is not valid', () => server.post('/examples')
     .set('Accept', 'application/json')
     .send({})
     .expect('Content-Type', /json/)
     .expect(400)
-    .expect(({ body: { data } }) => expect(data.title).to.have.property('kind', 'required')));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(400);
+      expect(data.title).to.have.property('kind', 'required');
+    }));
 
   it('should update an example', () => server.patch(`/examples/${String(examples[0].id)}`)
     .set('Accept', 'application/json')
@@ -66,13 +82,21 @@ describe('Standard routes', () => {
     })
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.example).to.have.property('comments', 25)));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.example).to.have.property('comments', 25);
+    }));
 
   it('should get delete an example', () => server.delete(`/examples/${String(examples[1].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.example).to.equal(null))
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.example).to.equal(null);
+    })
     .then(async () => {
       const count = await Example.count({});
       expect(count).to.equal(2);
@@ -82,6 +106,10 @@ describe('Standard routes', () => {
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(200)
-    .expect(({ body: { data } }) => expect(data.attach).to.equal('hello')));
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(200);
+      expect(data.attach).to.equal('hello');
+    }));
 
 });
