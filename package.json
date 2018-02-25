@@ -1,7 +1,7 @@
 {
   "name": "hobson",
-  "version": "0.2.4",
-  "description": "Lightweight, minimalistic approach to RESTful endpoints.",
+  "version": "0.2.5",
+  "description": "Lightweight, minimalistic approach to fully functioning RESTful endpoints in express",
   "main": "src/index.js",
   "scripts": {
     "clean": "rm -rf lib && mkdir lib",
