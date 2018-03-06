@@ -15,6 +15,7 @@ class UserResource extends Resource {
       email: {
         type: String,
         required: true,
+        unique: true,
       },
       password: {
         type: String,
