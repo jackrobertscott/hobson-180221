@@ -116,10 +116,11 @@ class Resource {
    * Get the model after it has been defined.
    */
   get model() {
-    if (!this.resourceModel) {
-      throw new Error('Please run Resource.attach() before attempting to get the model');
+    try {
+      return mongoose.model(this.name);
+    } catch (e) {
+      return mongoose.model(this.name, this.schema);
     }
-    return this.resourceModel;
   }
 
   /**
@@ -238,10 +239,8 @@ class Resource {
    * Compile the resource and set it in stone.
    */
   compile() {
-    try {
-      this.resourceModel = mongoose.model(this.name);
-    } catch (e) {
-      this.resourceModel = mongoose.model(this.name, this.schema);
+    if (this.setup) {
+      throw new Error('Resource has already been setup. Calling Resource.compile() more than once.');
     }
     this.setup = true;
     this.router = Router();
@@ -256,7 +255,7 @@ class Resource {
           this.permissions.set(key, [() => true]);
         }
         const resources = {
-          model: this.resourceModel,
+          model: this.model,
           context: {}, // empty object which can be used to pass information between middlewares
         };
         const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
