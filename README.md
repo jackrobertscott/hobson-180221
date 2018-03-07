@@ -72,6 +72,13 @@ const unicornResource = new Resource({
 
 // other cool things...
 
+/**
+ * Make sure your app uses body parser or another parser as middleware
+ * before you connect the resource.
+ * 
+ * app.use(bodyParser.json());
+ * app.use(bodyParser.urlencoded({ extended: true }));
+ */
 unicornResource.attach(app);
 ```
 
