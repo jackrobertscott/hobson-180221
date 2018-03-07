@@ -64,9 +64,8 @@ const { Resource } = require('hobson');
 const unicornSchema = require('./unicornSchema');
 
 const unicornResource = new Resource({
-  name: 'unicorn',
+  name: 'Unicorn',
   schema: unicornSchema,
-  modelName: 'Unicorn', // optional: this will default to "Unicorn"
   path: '/unicorns', // optional: this will default to "/unicorns"
 });
 
