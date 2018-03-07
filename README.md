@@ -48,8 +48,6 @@ const unicornSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-}, {
-  timestamps: true,
 });
 
 // custom mongoose functions, virtual properties, and more...
@@ -57,10 +55,10 @@ const unicornSchema = new mongoose.Schema({
 module.exports = unicornSchema;
 ```
 
-**Step 2.** Create the hobson resource and attach it to your express app.
+**Step 2.** Create the hobson resource.
 
 ```js
-const { Resource } = require('hobson');
+const { Resource, connect } = require('hobson');
 const unicornSchema = require('./unicornSchema');
 
 const unicornResource = new Resource({
@@ -72,14 +70,23 @@ const unicornResource = new Resource({
 
 // other cool things...
 
-/**
- * Make sure your app uses body parser or another parser as middleware
- * before you connect the resource.
- * 
- * app.use(bodyParser.json());
- * app.use(bodyParser.urlencoded({ extended: true }));
- */
-unicornResource.attach(app);
+module.exports = unicornSchema;
+```
+
+**Step 3.** Attach your resources to your express app.
+
+```js
+const app = express();
+
+// add any middleware or routes...
+
+connect({
+  app,
+  resources: [
+    unicornResource,
+    // others...
+  ],
+});
 ```
 
 ### Endpoints
