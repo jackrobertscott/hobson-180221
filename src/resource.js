@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Router } = require('express');
-const { camelCase, lowerCase, pascalCase } = require('change-case');
+const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
 const {
   checkString,
@@ -54,7 +54,7 @@ class Resource {
     address,
   } = {}) {
     if (typeof name !== 'string') {
-      throw new Error('Parameter "resourceName" must be given to the Resource constructor as a string.');
+      throw new Error('Parameter "name" must be given to the Resource constructor as a string.');
     }
     if (typeof schema !== 'object') {
       throw new Error('Parameter "schema" must be given to the Resource constructor as a mongoose schema.');
@@ -62,8 +62,8 @@ class Resource {
     if (!Array.isArray(disable)) {
       throw new Error('Parameter "disable" must be given to the Resource constructor as an array.');
     }
-    if (modelName && typeof modelName !== 'string') {
-      throw new Error('Parameter "modelName" must be given to the Resource constructor as a string.');
+    if (modelName) {
+      throw new Error('Parameter "modelName" has been depreciated, use "name" instead.');
     }
     if (address && typeof address !== 'string') {
       throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
@@ -72,7 +72,7 @@ class Resource {
     this.unsecure = unsecure;
     this.resourceName = camelCase(singular(name));
     this.address = address || `/${camelCase(plural(name))}`;
-    this.modelName = modelName || pascalCase(singular(name));
+    this.name = name;
     this.schema = schema;
     this.disable = new Set(disable);
     this.endpoints = new Map([...this.defaults.entries()].map(Resource.formatEndpoint));
@@ -243,9 +243,9 @@ class Resource {
    */
   compile() {
     try {
-      this.resourceModel = mongoose.model(this.modelName);
+      this.resourceModel = mongoose.model(this.name);
     } catch (e) {
-      this.resourceModel = mongoose.model(this.modelName, this.schema);
+      this.resourceModel = mongoose.model(this.name, this.schema);
     }
     this.setup = true;
     this.router = Router();

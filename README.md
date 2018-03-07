@@ -64,14 +64,20 @@ const { Resource } = require('hobson');
 const unicornSchema = require('./unicornSchema');
 
 const unicornResource = new Resource({
-  name: 'unicorn',
+  name: 'Unicorn',
   schema: unicornSchema,
-  modelName: 'Unicorn', // optional: this will default to "Unicorn"
   path: '/unicorns', // optional: this will default to "/unicorns"
 });
 
 // other cool things...
 
+/**
+ * Make sure your app uses body parser or another parser as middleware
+ * before you connect the resource.
+ * 
+ * app.use(bodyParser.json());
+ * app.use(bodyParser.urlencoded({ extended: true }));
+ */
 unicornResource.attach(app);
 ```
 
