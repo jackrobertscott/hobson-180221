@@ -6,6 +6,7 @@ class UserResource extends Resource {
 
   constructor(...args) {
     super(...args);
+    this.auth = true;
     const { secret } = args[0];
     if (typeof secret !== 'string') {
       throw new Error('Parameter "secret" must be given to the UserResource constructor as a string.');

@@ -7,8 +7,6 @@ const userSchema = new mongoose.Schema({
   lastName: {
     type: String,
   },
-}, {
-  timestamps: true,
 });
 
 module.exports = userSchema;

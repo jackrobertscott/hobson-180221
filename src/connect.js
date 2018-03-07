@@ -1,6 +1,7 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
 const { formatResponse } = require('./utils/helpers');
+const { authPopulate } = require('./utils/auth');
 
 /**
  * Connect resources to the express app.
@@ -24,8 +25,13 @@ function connect({
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
   }
-  resources.forEach(resource => resource.attach(app));
-  app.get('/', (req, res) => res.send({
+  const compile = resources.map(resource => resource.compile());
+  const authResource = compile.find(resource => resource.auth);
+  if (authResource) {
+    app.use(authPopulate({ model: authResource.model }));
+  }
+  compile.forEach(resource => resource.attach(app));
+  app.get('/', (req, res) => res.status(HTTPStatus.OK).send({
     environment: process.env.NODE_ENV,
   }));
   app.use((req, res, next) => {

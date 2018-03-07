@@ -133,6 +133,7 @@ function permissionify(key, permissions) {
     if (!status.find(outcome => !!outcome)) {
       const error = new Error('Permission denied to access route.');
       error.code = HTTPStatus.UNAUTHORIZED;
+      error.status = 'fail';
       throw error;
     }
   };
