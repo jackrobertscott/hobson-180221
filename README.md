@@ -66,7 +66,7 @@ const unicornSchema = require('./unicornSchema');
 const unicornResource = new Resource({
   name: 'Unicorn',
   schema: unicornSchema,
-  path: '/unicorns', // optional: this will default to "/unicorns"
+  address: '/unicorns', // optional: this will default to "/unicorns"
 });
 
 // other cool things...

@@ -48,9 +48,10 @@ class Resource {
   constructor({
     name,
     schema,
+    address,
     disable = [],
     unsecure = false,
-    address,
+    timestamps = true,
   } = {}) {
     if (typeof name !== 'string') {
       throw new Error('Parameter "name" must be given to the Resource constructor as a string.');
@@ -76,7 +77,9 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
-    this.schema.set('timestamps', true);
+    if (timestamps) {
+      this.schema.set('timestamps', true);
+    }
   }
 
   /**
