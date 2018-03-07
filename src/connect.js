@@ -31,6 +31,7 @@ function connect({
   app.use((req, res, next) => {
     const code = HTTPStatus.NOT_FOUND;
     const err = new Error(HTTPStatus[code]);
+    err.status = 'fail';
     err.code = code;
     next(err);
   });
