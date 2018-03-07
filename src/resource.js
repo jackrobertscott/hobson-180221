@@ -50,7 +50,6 @@ class Resource {
     schema,
     disable = [],
     unsecure = false,
-    modelName,
     address,
   } = {}) {
     if (typeof name !== 'string') {
@@ -61,9 +60,6 @@ class Resource {
     }
     if (!Array.isArray(disable)) {
       throw new Error('Parameter "disable" must be given to the Resource constructor as an array.');
-    }
-    if (modelName) {
-      throw new Error('Parameter "modelName" has been depreciated, use "name" instead.');
     }
     if (address && typeof address !== 'string') {
       throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
