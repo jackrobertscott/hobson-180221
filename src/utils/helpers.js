@@ -50,16 +50,17 @@ module.exports.checkExists = checkExists;
 /**
  * Format response.
  */
-function formatResponse(data) {
+function formatResponse(data, debug) {
   if (data instanceof Error) {
     const error = {
       status: data.status || 'error',
       code: data.code || HTTPStatus.INTERNAL_SERVER_ERROR,
       message: data.message || 'There was an error on the server.',
+      data: {
+        ...(typeof data.data === 'object' ? data.data : {}),
+        stack: debug && data.stack ? data.stack : {},
+      },
     };
-    if (data.data) {
-      error.data = data.data;
-    }
     return error;
   }
   return {

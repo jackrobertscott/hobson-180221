@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const logger = require('morgan');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const compress = require('compression');
 const methodOverride = require('method-override');
@@ -11,17 +10,16 @@ const cors = require('cors');
 mongoose.Promise = Promise;
 mongoose.connect(process.env.MONGODB_URI);
 
-const app = express();
-if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-  app.use(logger('dev'));
-}
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(compress());
-app.use(methodOverride());
-app.use(helmet());
-app.use(cors({ origin: '*' }));
-app.enable('trust proxy');
-
-module.exports = app;
+module.exports = () => {
+  const app = express();
+  if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+    app.use(logger('dev'));
+  }
+  app.use(cookieParser());
+  app.use(compress());
+  app.use(methodOverride());
+  app.use(helmet());
+  app.use(cors({ origin: '*' }));
+  app.enable('trust proxy');
+  return app;
+};

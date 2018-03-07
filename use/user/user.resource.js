@@ -7,4 +7,4 @@ const user = new UserResource({
   secret: 'supersecretsecret',
 });
 
-module.exports = user.compile();
+module.exports = user;

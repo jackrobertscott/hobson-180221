@@ -3,10 +3,11 @@ require('dotenv').config();
 const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
-const app = require('../use/app');
+const { connect } = require('../lib/index');
+const app = require('../use/app')();
 const exampleResource = require('../use/example/example.resource');
 
-exampleResource.attach(app);
+connect({ app, resources: [exampleResource] });
 const Example = exampleResource.model;
 const server = request(app);
 
