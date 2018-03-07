@@ -76,6 +76,7 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
+    this.schema.set('timestamps', true);
   }
 
   /**
