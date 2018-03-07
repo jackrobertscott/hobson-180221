@@ -2,7 +2,7 @@ const { Resource } = require('../../lib/index');
 const exampleSchema = require('./example.schema');
 
 const example = new Resource({
-  name: 'example',
+  name: 'Example',
   schema: exampleSchema,
 });
 

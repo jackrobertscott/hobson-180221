@@ -31,7 +31,7 @@ describe('User resource', () => {
 
   it('should have the correct resource name', () => expect(userResource.resourceName).to.equal('user'));
   it('should have the correct address', () => expect(userResource.address).to.equal('/users'));
-  it('should have the correct model name', () => expect(userResource.modelName).to.equal('User'));
+  it('should have the correct model name', () => expect(userResource.name).to.equal('User'));
 
   it('should fail getting all users', () => server.get('/users')
     .set('Accept', 'application/json')

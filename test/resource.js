@@ -28,7 +28,7 @@ describe('Standard resource', () => {
 
   it('should have the correct resource name', () => expect(exampleResource.resourceName).to.equal('example'));
   it('should have the correct address', () => expect(exampleResource.address).to.equal('/examples'));
-  it('should have the correct model name', () => expect(exampleResource.modelName).to.equal('Example'));
+  it('should have the correct model name', () => expect(exampleResource.name).to.equal('Example'));
 
   it('should get all examples', () => server.get('/examples')
     .set('Accept', 'application/json')

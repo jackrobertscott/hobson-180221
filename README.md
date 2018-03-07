@@ -41,7 +41,7 @@ const mongoose = require('mongoose');
 const unicornSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User', // same as userResource.modelName
+    ref: 'User', // same as userResource.name
     required: true,
   },
   name: {
@@ -111,7 +111,7 @@ You can also disable any, unwanted, default endpoints when you define the resour
 
 ```js
 const unicornResource = new Resource({
-  name: 'unicorn',
+  name: 'Unicorn',
   schema: unicornSchema,
   disable: ['find', 'remove'], // disabled
 });
