@@ -2,7 +2,7 @@ const { Resource } = require('../../lib/index');
 const exampleSchema = require('./example.schema');
 
 const example = new Resource({
-  name: 'example',
+  name: 'Example',
   schema: exampleSchema,
 });
 
@@ -89,4 +89,4 @@ example
     Object.assign(context, { messageTwo: 'Jack is cool' });
   });
 
-module.exports = example.compile();
+module.exports = example;

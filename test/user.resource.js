@@ -3,11 +3,18 @@ require('dotenv').config();
 const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
+const { connect } = require('../lib/index');
 const faker = require('faker');
-const app = require('../use/app');
+const app = require('../use/app')();
+const { generateToken } = require('../src/utils/auth');
 const userResource = require('../use/user/user.resource');
 
-userResource.attach(app);
+connect({
+  app,
+  resources: [
+    userResource,
+  ],
+});
 const User = userResource.model;
 const server = request(app);
 
@@ -15,6 +22,7 @@ describe('User resource', () => {
 
   let users;
   let password;
+  let token;
 
   before(async () => {
     await User.remove({});
@@ -27,11 +35,12 @@ describe('User resource', () => {
       password: faker.internet.password(),
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
+    token = generateToken(users[0], 'supersecretsecret');
   });
 
   it('should have the correct resource name', () => expect(userResource.resourceName).to.equal('user'));
   it('should have the correct address', () => expect(userResource.address).to.equal('/users'));
-  it('should have the correct model name', () => expect(userResource.modelName).to.equal('User'));
+  it('should have the correct model name', () => expect(userResource.name).to.equal('User'));
 
   it('should fail getting all users', () => server.get('/users')
     .set('Accept', 'application/json')
@@ -94,6 +103,24 @@ describe('User resource', () => {
       expect(status).to.equal('success');
       expect(code).to.equal(HTTPStatus.OK);
       expect(data.auth).to.have.property('token');
+    }));
+
+  it('should fail for unauthenticated requests', () => server.get('/users/check')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.UNAUTHORIZED);
+    }));
+
+  it('should correctly authenticate a user', () => server.get('/users/check')
+    .set('Accept', 'application/json')
+    .set('Authorization', token)
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('working', true);
     }));
 
   it('should fail if a users email is incorrect', () => server.post('/users/login')

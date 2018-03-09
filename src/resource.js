@@ -48,10 +48,10 @@ class Resource {
   constructor({
     name,
     schema,
+    address,
     disable = [],
     unsecure = false,
-    modelName,
-    address,
+    timestamps = true,
   } = {}) {
     if (typeof name !== 'string') {
       throw new Error('Parameter "name" must be given to the Resource constructor as a string.');
@@ -61,9 +61,6 @@ class Resource {
     }
     if (!Array.isArray(disable)) {
       throw new Error('Parameter "disable" must be given to the Resource constructor as an array.');
-    }
-    if (modelName) {
-      throw new Error('Parameter "modelName" has been depreciated, use "name" instead.');
     }
     if (address && typeof address !== 'string') {
       throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
@@ -80,6 +77,9 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
+    if (timestamps) {
+      this.schema.set('timestamps', true);
+    }
   }
 
   /**
@@ -120,10 +120,11 @@ class Resource {
    * Get the model after it has been defined.
    */
   get model() {
-    if (!this.resourceModel) {
-      throw new Error('Please run Resource.attach() before attempting to get the model');
+    try {
+      return mongoose.model(this.name);
+    } catch (e) {
+      return mongoose.model(this.name, this.schema);
     }
-    return this.resourceModel;
   }
 
   /**
@@ -242,10 +243,8 @@ class Resource {
    * Compile the resource and set it in stone.
    */
   compile() {
-    try {
-      this.resourceModel = mongoose.model(this.name);
-    } catch (e) {
-      this.resourceModel = mongoose.model(this.name, this.schema);
+    if (this.setup) {
+      throw new Error('Resource has already been setup. Calling Resource.compile() more than once.');
     }
     this.setup = true;
     this.router = Router();
@@ -260,7 +259,7 @@ class Resource {
           this.permissions.set(key, [() => true]);
         }
         const resources = {
-          model: this.resourceModel,
+          model: this.model,
           context: {}, // empty object which can be used to pass information between middlewares
         };
         const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];

@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const HTTPStatus = require('http-status');
 
 /**
  * Generate an authentication token which can be sent to the client to
@@ -35,19 +34,31 @@ module.exports.authPackage = authPackage;
 /**
  * Authenticate a user.
  */
-async function authenticate({ req, model }) {
-  if (!req.headers || !req.headers.authorization) {
-    const error = new Error('No authorisation token attached to request.');
-    error.code = HTTPStatus.UNAUTHORIZED;
-    throw error;
-  }
-  const { id } = decodeToken(req.headers.authorization);
-  const user = await model.findById(id);
-  if (!user) {
-    const error = new Error('No user was found for the given id.');
-    error.code = HTTPStatus.UNAUTHORIZED;
-    throw error;
-  }
-  Object.assign(req, { user });
+async function authenticate({ req }) {
+  return req.auth && req.auth.id && req.user;
 }
 module.exports.authenticate = authenticate;
+
+/**
+ * Populate authentication on request if auth found.
+ */
+function authPopulate({ model }) {
+  return (req, res, next) => {
+    if (!req.headers || !req.headers.authorization) {
+      next();
+      return;
+    }
+    req.auth = decodeToken(req.headers.authorization, 'supersecretsecret');
+    if (req.auth && model) {
+      model.findById(req.auth.id)
+        .then((user) => {
+          req.user = user;
+          next();
+        })
+        .catch(next);
+    } else {
+      next();
+    }
+  };
+}
+module.exports.authPopulate = authPopulate;
