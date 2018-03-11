@@ -28,7 +28,7 @@ function connect({
   const compile = resources.map(resource => resource.compile());
   const authResource = compile.find(resource => resource.auth);
   if (authResource) {
-    app.use(authPopulate({ model: authResource.model }));
+    app.use(authPopulate({ model: authResource.model, secret: authResource.secret }));
   }
   compile.forEach(resource => resource.attach(app));
   app.get('/', (req, res) => res.status(HTTPStatus.OK).send({

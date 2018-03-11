@@ -42,13 +42,13 @@ module.exports.authenticate = authenticate;
 /**
  * Populate authentication on request if auth found.
  */
-function authPopulate({ model }) {
+function authPopulate({ model, secret }) {
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
       next();
       return;
     }
-    req.auth = decodeToken(req.headers.authorization, 'supersecretsecret');
+    req.auth = decodeToken(req.headers.authorization, secret);
     if (req.auth && model) {
       model.findById(req.auth.id)
         .then((user) => {
