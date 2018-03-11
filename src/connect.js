@@ -25,7 +25,7 @@ function connect({
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
   }
-  const compile = resources.map(resource => resource.compile());
+  const compile = resources.map(resource => resource.setup ? resource : resource.compile());
   const authResource = compile.find(resource => resource.auth);
   if (authResource) {
     app.use(authPopulate({ model: authResource.model, secret: authResource.secret }));
