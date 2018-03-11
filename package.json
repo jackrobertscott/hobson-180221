@@ -1,6 +1,6 @@
 {
   "name": "hobson",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Lightweight, minimalistic approach to fully functioning RESTful endpoints in express",
   "main": "lib/index.js",
   "scripts": {
