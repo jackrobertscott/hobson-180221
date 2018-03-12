@@ -82,6 +82,8 @@ function middlify(middleware, resources, end = false) {
     params: req.params,
     body: req.body,
     query: req.query,
+    user: req.user,
+    auth: req.auth,
     ...resources,
   }))()
     .then(data => end ? res.status(200).json(formatResponse(data)) : next())
