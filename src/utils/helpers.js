@@ -34,10 +34,10 @@ module.exports.createError = createError;
 /**
  * Check an parameter is a string or throw an error.
  */
-function checkString(chars, { method, message } = {}) {
-  if (typeof chars !== 'string') {
+function checkString(check, { method, message } = {}) {
+  if (typeof check !== 'string') {
     throw createError({
-      message: message || `Parameter "${chars}" must be given to the ${method || 'unknown'} method.`,
+      message: message || `Parameter of type string is missing on the ${method || 'unknown'} method.`,
     });
   }
 }
@@ -67,19 +67,6 @@ function checkObjectId(id) {
   }
 }
 module.exports.checkObjectId = checkObjectId;
-
-/**
- * Check that an item exists.
- */
-function checkExists(value, { message } = {}) {
-  if (!value) {
-    throw createError({
-      message: 'No items were found for the given request.',
-      code: HTTPStatus.NOT_FOUND,
-    });
-  }
-}
-module.exports.checkExists = checkExists;
 
 /**
  * Format response.

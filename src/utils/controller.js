@@ -1,6 +1,7 @@
 const { camelCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkObjectId, checkExists } = require('./helpers');
+const HTTPStatus = require('http-status');
+const { checkString, checkObjectId, createError } = require('./helpers');
 
 /**
  * Find many items in the database.
@@ -11,7 +12,9 @@ function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
   return async ({ query: { filter }, model }) => {
     const value = await model.find(filter || {});
-    checkExists(value);
+    if (!value) {
+      throw createError({ message: `Error occurred when attempting to query the "${name}" model.` });
+    }
     return {
       [plural(name)]: value,
     };
@@ -30,7 +33,12 @@ function findOne(name) {
     const id = params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
-    checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
+    if (!value) {
+      throw createError({
+        message: `Model ${name} did not have an item with the id "${id}".`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
     return {
       [singular(name)]: value,
     };
@@ -47,7 +55,9 @@ function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
   return async ({ body, model }) => {
     const value = await model.create(body);
-    checkExists(value, { message: `There was an error creating an item for ${name}.` });
+    if (!value) {
+      throw createError({ message: `Error occurred creating an item for "${name}" model.` });
+    }
     return {
       [singular(name)]: value,
     };
@@ -66,7 +76,12 @@ function update(name) {
     const id = params[`${name}Id`];
     checkObjectId(id);
     const value = await model.findById(id);
-    checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
+    if (!value) {
+      throw createError({
+        message: `Model ${name} did not have an item with the id "${id}".`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
     await Object.assign(value, body).save();
     return {
       [singular(name)]: value,
