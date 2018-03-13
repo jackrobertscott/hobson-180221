@@ -52,7 +52,7 @@ function tokenPopulate({ Model, secret }) {
     Model.findById(auth.id)
       .then((issue) => {
         if (issue.active) {
-          Object.assign(req, { auth });
+          Object.assign(req, { auth: issue });
         }
         next();
       })
@@ -71,7 +71,7 @@ function authPopulate({ Model }) {
       return;
     }
     if (req.auth && Model) {
-      Model.findById(req.auth.userId)
+      Model.findById(req.auth.payload.userId)
         .then((user) => {
           req.user = user;
           next();

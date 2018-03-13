@@ -40,7 +40,12 @@ function login({ Token, secret } = {}) {
       });
     }
     const auth = await createToken({ Token, user, secret });
-    return { auth };
+    return {
+      auth: {
+        token: auth.token,
+        ...auth.payload,
+      },
+    };
   };
 }
 module.exports.login = login;
@@ -61,7 +66,10 @@ function register({ Token, secret } = {}) {
     const auth = await createToken({ Token, user, secret });
     return {
       user,
-      auth,
+      auth: {
+        token: auth.token,
+        ...auth.payload,
+      },
     };
   };
 }
