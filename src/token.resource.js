@@ -1,6 +1,14 @@
 const Resource = require('./resource');
+const { Schema } = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 class TokenResource extends Resource {
+
+  static generate(secret, payload, { expires } = {}) {
+    return jwt.sign(payload, secret, {
+      expiresIn: expires || '30d',
+    });
+  }
 
   constructor(...args) {
     super(...args);
@@ -15,9 +23,27 @@ class TokenResource extends Resource {
         type: String,
         required: true,
       },
-      expiry: {
+      payload: {
+        type: Schema.Types.Mixed,
+        required: true,
+      },
+      expires: {
         type: Number,
         required: true,
+      },
+    });
+    this.addEndpoint('create', {
+      path: '/',
+      method: 'post',
+      handler: async ({ model, body }) => {
+        const { payload, expires } = body;
+        const token = TokenResource.generate(secret, payload, { expires });
+        const save = await model.create({
+          token,
+          payload,
+          expires,
+        });
+        return { save };
       },
     });
   }

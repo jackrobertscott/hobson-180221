@@ -1,14 +1,44 @@
 const { Types } = require('mongoose');
 const HTTPStatus = require('http-status');
 
-const { ObjectId } = Types;
+/**
+ * Check an parameter is a string or throw an error.
+ */
+function createError({ message, code = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
+  if (message && typeof message !== 'string') {
+    throw new Error('Parameter "message" passed to createError() must be a string.');
+  }
+  if (code) {
+    if (typeof code !== 'number') {
+      throw new Error('Parameter "code" passed to createError() must be a number.');
+    }
+  }
+  let status;
+  if (code >= 500 && code < 600) {
+    status = 'error';
+  } else if (code >= 400 && code < 500) {
+    status = 'fail';
+  } else {
+    throw new Error('Parameter "code" passed to createError() must be between 400 and 600.');
+  }
+  const error = new Error(message || 'Error has occurred on the server.');
+  error.status = status;
+  error.code = code;
+  if (data) {
+    error.data = data;
+  }
+  return error;
+}
+module.exports.createError = createError;
 
 /**
  * Check an parameter is a string or throw an error.
  */
 function checkString(chars, { method, message } = {}) {
   if (typeof chars !== 'string') {
-    throw new Error(message || `String parameter must be given to the ${method || 'unknown'} method.`);
+    throw createError({
+      message: message || `Parameter "${chars}" must be given to the ${method || 'unknown'} method.`,
+    });
   }
 }
 module.exports.checkString = checkString;
@@ -18,7 +48,9 @@ module.exports.checkString = checkString;
  */
 function checkCompile(compile) {
   if (compile) {
-    throw new Error('Resource can not be change once it has been compiled.');
+    throw createError({
+      message: 'Resource can not be change once it has been compiled.',
+    });
   }
 }
 module.exports.checkCompile = checkCompile;
@@ -26,11 +58,12 @@ module.exports.checkCompile = checkCompile;
 /**
  * Check if the id of an item is a valid.
  */
-function checkObjectId(id, { message } = {}) {
-  if (!id || !ObjectId.isValid(id)) {
-    const error = new Error(message || 'Request did not contain a valid id.');
-    error.code = HTTPStatus.BAD_REQUEST;
-    throw error;
+function checkObjectId(id) {
+  if (!id || !Types.ObjectId.isValid(id)) {
+    throw createError({
+      message: 'Request did not contain a valid id.',
+      code: HTTPStatus.BAD_REQUEST,
+    });
   }
 }
 module.exports.checkObjectId = checkObjectId;
@@ -40,9 +73,10 @@ module.exports.checkObjectId = checkObjectId;
  */
 function checkExists(value, { message } = {}) {
   if (!value) {
-    const error = new Error(message || 'No items were found for the given request.');
-    error.code = HTTPStatus.NOT_FOUND;
-    throw error;
+    throw createError({
+      message: 'No items were found for the given request.',
+      code: HTTPStatus.NOT_FOUND,
+    });
   }
 }
 module.exports.checkExists = checkExists;
@@ -50,23 +84,27 @@ module.exports.checkExists = checkExists;
 /**
  * Format response.
  */
-function formatResponse(data, debug) {
-  if (data instanceof Error) {
+function formatResponse(response = {}, debug = false) {
+  if (response instanceof Error) {
+    const { status, code, data, message, stack } = response;
     const error = {
-      status: data.status || 'error',
-      code: data.code || HTTPStatus.INTERNAL_SERVER_ERROR,
-      message: data.message || 'There was an error on the server.',
-      data: {
-        ...(typeof data.data === 'object' ? data.data : {}),
-        stack: debug && data.stack ? data.stack : {},
-      },
+      status: status || 'error',
+      code: code || HTTPStatus.INTERNAL_SERVER_ERROR,
+      message: message || 'There was an error on the server.',
     };
+    if (debug && stack) {
+      error.stack = stack;
+    }
+    if (data) {
+      error.data = data;
+    }
     return error;
   }
+  const { status, code, data } = response;
   return {
-    status: 'success',
-    code: HTTPStatus.OK,
-    data,
+    status: status || 'success',
+    code: code || HTTPStatus.OK,
+    data: data,
   };
 }
 module.exports.formatResponse = formatResponse;
@@ -86,7 +124,7 @@ function middlify(middleware, resources, end = false) {
     auth: req.auth,
     ...resources,
   }))()
-    .then(data => end ? res.status(200).json(formatResponse(data)) : next())
+    .then(data => end ? res.status(200).json(formatResponse({ data })) : next())
     .catch(error => res.status(error.code || HTTPStatus.INTERNAL_SERVER_ERROR).json(formatResponse(error)));
 }
 module.exports.middlify = middlify;
