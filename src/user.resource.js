@@ -7,11 +7,6 @@ class UserResource extends Resource {
   constructor(...args) {
     super(...args);
     this.auth = true;
-    const { secret } = args[0];
-    if (typeof secret !== 'string') {
-      throw new Error('Parameter "secret" must be given to the UserResource constructor as a string.');
-    }
-    this.secret = secret;
     this.schema.add({
       email: {
         type: String,
@@ -39,26 +34,31 @@ class UserResource extends Resource {
     this.schema.methods.comparePassword = function comparePassword(candidate) {
       return bcrypt.compare(candidate, this.password);
     };
+  }
+
+  /**
+   * Add the user endpoints.
+   */
+  addExtensions(options) {
     this.addEndpoint('login', {
       path: '/login',
       method: 'post',
-      handler: login(this.secret),
+      handler: login(options),
       permissions: [() => true],
     });
     this.addEndpoint('register', {
       path: '/register',
       method: 'post',
-      handler: register(this.secret),
+      handler: register(options),
       permissions: [() => true],
     });
     this.addEndpoint('logout', {
       path: '/logout',
       method: 'get',
-      handler: logout(),
+      handler: logout(options),
       permissions: [() => true],
     });
   }
 
 }
-
 module.exports = UserResource;

@@ -7,7 +7,11 @@ const { connect } = require('../lib/index');
 const app = require('../use/app')();
 const exampleResource = require('../use/example/example.resource');
 
-connect({ app, resources: [exampleResource] });
+connect({
+  app,
+  resources: [exampleResource],
+  secret: 'ajsdgfadfakjsdhfkjk',
+});
 const Example = exampleResource.model;
 const server = request(app);
 

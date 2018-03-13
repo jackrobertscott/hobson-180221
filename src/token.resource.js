@@ -12,12 +12,8 @@ class TokenResource extends Resource {
 
   constructor(...args) {
     super(...args);
-    this.auth = true;
-    const { secret } = args[0];
-    if (typeof secret !== 'string') {
-      throw new Error('Parameter "secret" must be given to the TokenResource constructor as a string.');
-    }
-    this.secret = secret;
+    this.secret = args[0].secret;
+    this.token = true;
     this.schema.add({
       token: {
         type: String,
@@ -31,23 +27,17 @@ class TokenResource extends Resource {
         type: Number,
         required: true,
       },
-    });
-    this.addEndpoint('create', {
-      path: '/',
-      method: 'post',
-      handler: async ({ model, body }) => {
-        const { payload, expires } = body;
-        const token = TokenResource.generate(secret, payload, { expires });
-        const save = await model.create({
-          token,
-          payload,
-          expires,
-        });
-        return { save };
+      iat: {
+        type: Number,
+        required: true,
+      },
+      active: {
+        type: Boolean,
+        required: true,
+        default: true,
       },
     });
   }
 
 }
-
 module.exports = TokenResource;

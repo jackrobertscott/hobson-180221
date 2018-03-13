@@ -1,28 +1,46 @@
 const HTTPStatus = require('http-status');
 const { authPackage } = require('./auth');
+const { createError, checkString } = require('./helpers');
+
+/**
+ * Create and save a token with a user.
+ */
+async function createToken({ Token, user, secret } = {}) {
+  const item = new Token({});
+  const pack = authPackage({
+    id: item.id,
+    userId: user.id,
+    email: user.email,
+  }, secret);
+  return Object.assign(item, pack).save();
+}
+module.exports.createToken = createToken;
 
 /**
  * Login a user with the provided credentials.
  */
-function login(secret) {
-  return async ({ model, body: { email, password } }) => {
-    const user = await model.findOne({ email });
+function login({ Token, secret } = {}) {
+  checkString(secret, { method: 'login' });
+  if (!Token) {
+    throw createError({ message: 'Parameters missing to login function; needs token model or secret.' });
+  }
+  return async ({ Model, body: { email, password } }) => {
+    const user = await Model.findOne({ email });
     if (!user) {
-      const error = new Error('No user was found for the given email.');
-      error.code = HTTPStatus.NOT_FOUND;
-      error.status = 'fail';
-      throw error;
+      throw createError({
+        message: 'No user was found for the given email.',
+        code: HTTPStatus.NOT_FOUND,
+      });
     }
     const match = await user.comparePassword(password);
     if (!match) {
-      const error = new Error('Password is incorrect.');
-      error.code = HTTPStatus.BAD_REQUEST;
-      error.status = 'fail';
-      throw error;
+      throw createError({
+        message: 'Password is incorrect.',
+        code: HTTPStatus.BAD_REQUEST,
+      });
     }
-    return {
-      auth: authPackage(user, secret),
-    };
+    const auth = await createToken({ Token, user, secret });
+    return { auth };
   };
 }
 module.exports.login = login;
@@ -30,12 +48,20 @@ module.exports.login = login;
 /**
  * Register (sign up) a new user.
  */
-function register(secret) {
-  return async ({ model, body }) => {
-    const user = await model.create(body);
+function register({ Token, secret } = {}) {
+  checkString(secret, { method: 'login' });
+  if (!Token) {
+    throw createError({ message: 'Parameters missing to login function; needs token model or secret.' });
+  }
+  return async ({ Model, body }) => {
+    const user = await Model.create(body);
+    if (!user) {
+      throw createError({ message: 'Error occurred while creating user.' });
+    }
+    const auth = await createToken({ Token, user, secret });
     return {
       user,
-      auth: authPackage(user, secret),
+      auth,
     };
   };
 }
@@ -45,6 +71,11 @@ module.exports.register = register;
  * Logout a user from the application.
  */
 function logout() {
-  return () => ({ auth: null });
+  return async ({ auth }) => {
+    if (auth) {
+      await Object.assign(auth, { active: false }).save();
+    }
+    return { auth: null };
+  };
 }
 module.exports.logout = logout;

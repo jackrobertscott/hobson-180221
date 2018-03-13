@@ -10,8 +10,8 @@ const { checkString, checkObjectId, createError } = require('./helpers');
  */
 function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
-  return async ({ query: { filter }, model }) => {
-    const value = await model.find(filter || {});
+  return async ({ query: { filter }, Model }) => {
+    const value = await Model.find(filter || {});
     if (!value) {
       throw createError({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
@@ -29,10 +29,10 @@ module.exports.find = find;
  */
 function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
-  return async ({ params, model }) => {
+  return async ({ params, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    const value = await model.findById(id);
+    const value = await Model.findById(id);
     if (!value) {
       throw createError({
         message: `Model ${name} did not have an item with the id "${id}".`,
@@ -53,8 +53,8 @@ module.exports.findOne = findOne;
  */
 function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
-  return async ({ body, model }) => {
-    const value = await model.create(body);
+  return async ({ body, Model }) => {
+    const value = await Model.create(body);
     if (!value) {
       throw createError({ message: `Error occurred creating an item for "${name}" model.` });
     }
@@ -72,10 +72,10 @@ module.exports.create = create;
  */
 function update(name) {
   checkString(name, { method: camelCase(`update${name}`) });
-  return async ({ params, body, model }) => {
+  return async ({ params, body, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    const value = await model.findById(id);
+    const value = await Model.findById(id);
     if (!value) {
       throw createError({
         message: `Model ${name} did not have an item with the id "${id}".`,
@@ -97,10 +97,10 @@ module.exports.update = update;
  */
 function remove(name) {
   checkString(name, { method: camelCase(`remove${name}`) });
-  return async ({ params, model }) => {
+  return async ({ params, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    await model.findByIdAndRemove(id);
+    await Model.findByIdAndRemove(id);
     return {
       [singular(name)]: null,
     };

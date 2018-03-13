@@ -3,17 +3,18 @@ require('dotenv').config();
 const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
+const mongoose = require('mongoose');
 const { connect } = require('../lib/index');
 const faker = require('faker');
 const app = require('../use/app')();
-const { generateToken } = require('../src/utils/auth');
+const { createToken } = require('../src/utils/user');
 const userResource = require('../use/user/user.resource');
 
+const secret = 'ajsdgfadfakjsdhfkjk';
 connect({
   app,
-  resources: [
-    userResource,
-  ],
+  resources: [userResource],
+  secret,
 });
 const User = userResource.model;
 const server = request(app);
@@ -22,7 +23,7 @@ describe('User resource', () => {
 
   let users;
   let password;
-  let token;
+  let userToken;
 
   before(async () => {
     await User.remove({});
@@ -35,7 +36,12 @@ describe('User resource', () => {
       password: faker.internet.password(),
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
-    token = generateToken(users[0], 'supersecretsecret');
+    const auth = await createToken({
+      Token: mongoose.model('Token'),
+      user: users[0],
+      secret,
+    });
+    userToken = auth.token;
   });
 
   it('should have the correct resource name', () => expect(userResource.resourceName).to.equal('user'));
@@ -115,7 +121,7 @@ describe('User resource', () => {
 
   it('should correctly authenticate a user', () => server.get('/users/check')
     .set('Accept', 'application/json')
-    .set('Authorization', token)
+    .set('Authorization', userToken)
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
       expect(status).to.equal('success');

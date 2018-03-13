@@ -2,7 +2,7 @@ const { Types } = require('mongoose');
 const HTTPStatus = require('http-status');
 
 /**
- * Check an parameter is a string or throw an error.
+ * Correctly create an error.
  */
 function createError({ message, code = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
   if (message && typeof message !== 'string') {
@@ -91,7 +91,7 @@ function formatResponse(response = {}, debug = false) {
   return {
     status: status || 'success',
     code: code || HTTPStatus.OK,
-    data: data,
+    data,
   };
 }
 module.exports.formatResponse = formatResponse;
@@ -130,11 +130,11 @@ function hookify(key, handler, preHooks, postHooks) {
       data = await handler(...args);
     } catch (e) {
       if (e && e.name === 'ValidationError') {
-        const error = new Error(e._message || 'Request validation failed');
-        error.code = HTTPStatus.BAD_REQUEST;
-        error.data = e.errors;
-        error.status = 'fail';
-        throw error;
+        throw createError({
+          message: e._message || 'Request validation failed.',
+          code: HTTPStatus.BAD_REQUEST,
+          data: e.errors,
+        });
       }
       throw e;
     }
@@ -158,10 +158,10 @@ function permissionify(key, permissions) {
     }
     const status = await Promise.all(checks);
     if (!status.find(outcome => !!outcome)) {
-      const error = new Error('Permission denied to access route.');
-      error.code = HTTPStatus.UNAUTHORIZED;
-      error.status = 'fail';
-      throw error;
+      throw createError({
+        message: 'Permission denied to access route.',
+        code: HTTPStatus.UNAUTHORIZED,
+      });
     }
   };
 }

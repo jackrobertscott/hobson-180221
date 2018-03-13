@@ -72,7 +72,10 @@ class Resource {
     this.name = name;
     this.schema = schema;
     this.disable = new Set(disable);
-    this.endpoints = new Map([...this.defaults.entries()].map(Resource.formatEndpoint));
+    const endpoints = [...this.defaults.entries()]
+      .map(Resource.formatEndpoint)
+      .filter(endpoint => !this.disable.has(endpoint[0]));
+    this.endpoints = new Map(endpoints);
     this.middleware = new Map();
     this.preHooks = new Map();
     this.postHooks = new Map();
@@ -251,15 +254,12 @@ class Resource {
     [...this.endpoints.entries()]
       .sort(orderRoutes)
       .forEach(([key, { path, method, handler }]) => {
-        if (this.disable.has(key)) {
-          return; // don't add endpoint if it is disabled
-        }
         if (this.unsecure && !this.permissions.has(key)) {
           // if the resource is "unsecure" and has no permission set then give public permission
           this.permissions.set(key, [() => true]);
         }
         const resources = {
-          model: this.model,
+          Model: this.model,
           context: {}, // empty object which can be used to pass information between middlewares
         };
         const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
@@ -287,5 +287,4 @@ class Resource {
   }
 
 }
-
 module.exports = Resource;
