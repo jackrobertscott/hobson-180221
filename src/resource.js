@@ -27,7 +27,7 @@ class Resource {
     checkString(id, { message: 'Endpoint id was not passed in as a string.' });
     checkString(path, { message: 'Endpoint path was not passed in as a string.' });
     checkString(method, { message: 'Endpoint method was not passed in as a string.' });
-    if (typeof handler !== 'function') {
+    if (typeof handler !== 'function' && typeof handler.then !== 'function') {
       throw new Error('Endpoint handler must be a function.');
     }
     return [id, {
@@ -171,7 +171,7 @@ class Resource {
   addMiddleware(id, middleware) {
     checkCompile(this.setup);
     checkString(id, { method: 'addMiddleware' });
-    if (typeof middleware !== 'function') {
+    if (typeof middleware !== 'function' && typeof middleware.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
     }
     let tasks = [];
@@ -191,7 +191,7 @@ class Resource {
   addPreHook(id, hook) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPreHook' });
-    if (typeof hook !== 'function') {
+    if (typeof hook !== 'function' && typeof hook.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
     }
     let hooks = [];
@@ -211,7 +211,7 @@ class Resource {
   addPostHook(id, hook) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPostHook' });
-    if (typeof hook !== 'function') {
+    if (typeof hook !== 'function' && typeof hook.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPostHook for "${id}".`);
     }
     let hooks = [];
@@ -231,7 +231,7 @@ class Resource {
   addPermission(id, permission) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPermission' });
-    if (typeof permission !== 'function') {
+    if (typeof permission !== 'function' && typeof permission.then !== 'function') {
       throw new Error(`Function not passed as "permission" parameter in addPermission for "${id}".`);
     }
     let permissions = [];

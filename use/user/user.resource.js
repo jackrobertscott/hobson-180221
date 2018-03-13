@@ -1,5 +1,4 @@
-const { UserResource } = require('../../lib/index');
-const { authenticate } = require('../../lib/utils/auth');
+const { UserResource, permissions } = require('../../lib/index');
 const userSchema = require('./user.schema');
 
 const user = new UserResource({
@@ -13,8 +12,10 @@ user.addEndpoint('check', {
   method: 'get',
   handler: () => ({ working: true }),
   permissions: [
-    authenticate,
+    permissions.isAuthenticated(),
   ],
 });
+
+user.addPermission('findOne', permissions.isAuthenticated());
 
 module.exports = user;

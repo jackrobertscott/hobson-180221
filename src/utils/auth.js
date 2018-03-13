@@ -39,14 +39,6 @@ function authPackage(payload, secret) {
 module.exports.authPackage = authPackage;
 
 /**
- * Authenticate a user.
- */
-async function authenticate({ req }) {
-  return req.auth && req.auth.id && req.user;
-}
-module.exports.authenticate = authenticate;
-
-/**
  * Populate a token found on the request.
  */
 function tokenPopulate({ Model, secret }) {

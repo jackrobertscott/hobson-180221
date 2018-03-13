@@ -58,6 +58,16 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.UNAUTHORIZED));
 
+  it('should getting one user', () => server.get(`/users/${String(users[0].id)}`)
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('user');
+    }));
+
   it('should fail to update a user', () => server.patch(`/users/${String(users[0].id)}`)
     .set('Accept', 'application/json')
     .send({})
@@ -108,6 +118,7 @@ describe('User resource', () => {
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
       expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('auth');
       expect(data.auth).to.have.property('token');
     }));
 
