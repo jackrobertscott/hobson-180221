@@ -1,4 +1,12 @@
 /**
+ * Access to anyone.
+ */
+function isAnyone() {
+  return () => true;
+}
+module.exports.isAnyone = isAnyone;
+
+/**
  * Authenticate a user.
  */
 function isAuthenticated() {
