@@ -157,7 +157,7 @@ function permissionify(key, permissions) {
       checks = permissions.get(key).map(check => check(...args));
     }
     const status = await Promise.all(checks);
-    if (!status.find(outcome => !!outcome)) {
+    if (!status.length || status.length !== status.filter(outcome => Boolean(outcome)).length) {
       throw createError({
         message: 'Permission denied to access route.',
         code: HTTPStatus.UNAUTHORIZED,
