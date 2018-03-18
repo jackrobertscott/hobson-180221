@@ -13,6 +13,7 @@ example
   .addEndpoint('smackTalk', {
     path: '/smacktalk',
     method: 'get',
+    open: true,
     handler: async () => ({
       talk: [
         'Yo mama!',
@@ -22,16 +23,12 @@ example
         'Hello! You smell.',
       ][Math.floor(Math.random() * 5)],
     }),
-    permissions: [
-      () => true,
-    ],
-    postHooks: [
-      ({ data }) => Object.assign(data, { attach: 'hello' }),
-    ],
   })
+  .addPostHook('smackTalk', ({ data }) => Object.assign(data, { attach: 'hello' }))
   .addEndpoint('niceTalk', {
     path: '/:nice/talk',
     method: 'get',
+    open: true,
     handler: async () => ({
       talk: [
         'You look nice today.',
@@ -41,17 +38,12 @@ example
         'Hello! You smell nice.',
       ][Math.floor(Math.random() * 5)],
     }),
-    permissions: [
-      () => true,
-    ],
   })
   .addEndpoint('orderSort', {
     path: '/order',
     method: 'get',
+    open: true,
     handler: () => ({ hello: true }),
-    permissions: [
-      () => true,
-    ],
   });
 
 /**

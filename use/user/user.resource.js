@@ -1,21 +1,20 @@
-const { UserResource, permissions } = require('../../lib/index');
+const { UserResource, access } = require('../../lib/index');
 const userSchema = require('./user.schema');
 
-const user = new UserResource({
+const userResource = new UserResource({
   name: 'User',
   schema: userSchema,
-  secret: 'supersecretsecret',
 });
 
-user.addEndpoint('check', {
-  path: '/check',
-  method: 'get',
-  handler: () => ({ working: true }),
-  permissions: [
-    permissions.isAuthenticated(),
-  ],
-});
+userResource
+  .addEndpoint('check', {
+    path: '/check',
+    method: 'get',
+    handler: () => ({ working: true }),
+  })
+  .addPermission('check', access.isUser());
 
-user.addPermission('findOne', permissions.isAuthenticated());
+userResource
+  .addPermission('findOne', access.isUser());
 
-module.exports = user;
+module.exports = userResource;

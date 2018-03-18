@@ -43,20 +43,20 @@ class UserResource extends Resource {
     this.addEndpoint('login', {
       path: '/login',
       method: 'post',
+      open: true,
       handler: login(options),
-      permissions: [() => true],
     });
     this.addEndpoint('register', {
       path: '/register',
       method: 'post',
+      open: true,
       handler: register(options),
-      permissions: [() => true],
     });
     this.addEndpoint('logout', {
       path: '/logout',
       method: 'get',
+      open: true,
       handler: logout(options),
-      permissions: [() => true],
     });
   }
 

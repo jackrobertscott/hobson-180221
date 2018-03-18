@@ -121,14 +121,14 @@ module.exports.hookify = hookify;
 /**
  * Check permissions.
  */
-function permissionify(key, permissions) {
+function permissionify(key, permissions, defaultOpen) {
   return async (...args) => {
     let checks = [];
     if (permissions.has(key)) {
       checks = permissions.get(key).map(check => check(...args));
     }
     const status = await Promise.all(checks);
-    if (!status.length || status.length !== status.filter(outcome => Boolean(outcome)).length) {
+    if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
       throw new ResponseError({
         message: 'Permission denied to access route.',
         code: HTTPStatus.UNAUTHORIZED,

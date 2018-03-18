@@ -23,17 +23,21 @@ class Resource {
   /**
    * Format an endpoint to make sure it matches correct standards.
    */
-  static formatEndpoint([id, { path, method, handler }]) {
-    checkString(id, { message: 'Endpoint id was not passed in as a string.' });
-    checkString(path, { message: 'Endpoint path was not passed in as a string.' });
-    checkString(method, { message: 'Endpoint method was not passed in as a string.' });
+  static formatEndpoint([id, { path, method, handler, open = false } = {}]) {
+    checkString(id, { message: 'Expected "id" parameter to be a string.' });
+    checkString(path, { message: 'Expected "path" parameter to be a string.' });
+    checkString(method, { message: 'Expected "method" parameter to be a string.' });
     if (typeof handler !== 'function' && typeof handler.then !== 'function') {
-      throw new Error('Endpoint handler must be a function.');
+      throw new Error('Expected "handler" parameter to be a function.');
+    }
+    if (typeof open !== 'boolean') {
+      throw new Error('Expected "public" parameter to be a boolean.');
     }
     return [id, {
       path,
       method: lowerCase(method),
       handler,
+      open,
     }];
   }
 
@@ -145,18 +149,6 @@ class Resource {
     if (typeof endpoint !== 'object') {
       throw new Error(`Endpoint data for ${id} must be an object.`);
     }
-    if (endpoint.middleware && Array.isArray(endpoint.middleware)) {
-      endpoint.middleware.forEach(item => this.addMiddleware(id, item));
-    }
-    if (endpoint.preHooks && Array.isArray(endpoint.preHooks)) {
-      endpoint.preHooks.forEach(item => this.addPreHook(id, item));
-    }
-    if (endpoint.postHooks && Array.isArray(endpoint.postHooks)) {
-      endpoint.postHooks.forEach(item => this.addPostHook(id, item));
-    }
-    if (endpoint.permissions && Array.isArray(endpoint.permissions)) {
-      endpoint.permissions.forEach(item => this.addPermission(id, item));
-    }
     const submission = Resource.formatEndpoint([id, endpoint]);
     this.endpoints.set(...submission);
     return this;
@@ -253,17 +245,14 @@ class Resource {
     this.router = Router();
     [...this.endpoints.entries()]
       .sort(orderRoutes)
-      .forEach(([key, { path, method, handler }]) => {
-        if (this.unsecure && !this.permissions.has(key)) {
-          // if the resource is "unsecure" and has no permission set then give public permission
-          this.permissions.set(key, [() => true]);
-        }
+      .forEach(([key, { path, method, handler, open }]) => {
+        const unsecure = typeof open === 'boolean' ? open : this.unsecure;
         const resources = {
           Model: this.model,
           context: {}, // empty object which can be used to pass information between middlewares
         };
         const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
-        const permission = middlify(permissionify(key, this.permissions), resources);
+        const permission = middlify(permissionify(key, this.permissions, unsecure), resources);
         const hooked = hookify(key, handler, this.preHooks, this.postHooks);
         const work = middlify(hooked, resources, true);
         this.router[lowerCase(method)](path, ...middleware, permission, work);
