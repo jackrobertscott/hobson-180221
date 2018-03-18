@@ -7,12 +7,12 @@ function isAnyone() {
 module.exports.isAnyone = isAnyone;
 
 /**
- * Authenticate a user.
+ * Authenticate from an access token.
  */
-function isAuthenticated() {
+function isTokenized() {
   return ({ req }) => req.auth && req.auth.id;
 }
-module.exports.isAuthenticated = isAuthenticated;
+module.exports.isTokenized = isTokenized;
 
 /**
  * Authenticate a user.
