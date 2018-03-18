@@ -10,8 +10,15 @@ const { checkString, checkObjectId, createError } = require('./helpers');
  */
 function find(name) {
   checkString(name, { method: camelCase(`find${name}`) });
-  return async ({ query: { filter }, Model }) => {
-    const value = await Model.find(filter || {});
+  return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
+    const query = Model.find();
+    if (filter) query.where(filter);
+    if (include) query.populate(include);
+    if (sort) query.sort(sort);
+    if (select) query.select(select);
+    if (skip) query.skip(Number(skip));
+    if (limit) query.limit(Number(limit));
+    const value = await query.exec();
     if (!value) {
       throw createError({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
@@ -29,10 +36,13 @@ module.exports.find = find;
  */
 function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
-  return async ({ params, Model }) => {
+  return async ({ params, Model, query: { include, select } }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    const value = await Model.findById(id);
+    const query = Model.findById(id);
+    if (include) query.populate(include);
+    if (select) query.select(select);
+    const value = await query.exec();
     if (!value) {
       throw createError({
         message: `Model ${name} did not have an item with the id "${id}".`,
