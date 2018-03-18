@@ -1,42 +1,13 @@
 const { Types } = require('mongoose');
 const HTTPStatus = require('http-status');
-
-/**
- * Correctly create an error.
- */
-function createError({ message, code = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
-  if (message && typeof message !== 'string') {
-    throw new Error('Parameter "message" passed to createError() must be a string.');
-  }
-  if (code) {
-    if (typeof code !== 'number') {
-      throw new Error('Parameter "code" passed to createError() must be a number.');
-    }
-  }
-  let status;
-  if (code >= 500 && code < 600) {
-    status = 'error';
-  } else if (code >= 400 && code < 500) {
-    status = 'fail';
-  } else {
-    throw new Error('Parameter "code" passed to createError() must be between 400 and 600.');
-  }
-  const error = new Error(message || 'Error has occurred on the server.');
-  error.status = status;
-  error.code = code;
-  if (data) {
-    error.data = data;
-  }
-  return error;
-}
-module.exports.createError = createError;
+const { ResponseError } = require('./errors');
 
 /**
  * Check an parameter is a string or throw an error.
  */
 function checkString(check, { method, message } = {}) {
   if (typeof check !== 'string') {
-    throw createError({
+    throw new ResponseError({
       message: message || `Parameter of type string is missing on the ${method || 'unknown'} method.`,
     });
   }
@@ -48,7 +19,7 @@ module.exports.checkString = checkString;
  */
 function checkCompile(compile) {
   if (compile) {
-    throw createError({
+    throw new ResponseError({
       message: 'Resource can not be change once it has been compiled.',
     });
   }
@@ -60,7 +31,7 @@ module.exports.checkCompile = checkCompile;
  */
 function checkObjectId(id) {
   if (!id || !Types.ObjectId.isValid(id)) {
-    throw createError({
+    throw new ResponseError({
       message: 'Request did not contain a valid id.',
       code: HTTPStatus.BAD_REQUEST,
     });
@@ -130,7 +101,7 @@ function hookify(key, handler, preHooks, postHooks) {
       data = await handler(...args);
     } catch (e) {
       if (e && e.name === 'ValidationError') {
-        throw createError({
+        throw new ResponseError({
           message: e._message || 'Request validation failed.',
           code: HTTPStatus.BAD_REQUEST,
           data: e.errors,
@@ -158,7 +129,7 @@ function permissionify(key, permissions) {
     }
     const status = await Promise.all(checks);
     if (!status.length || status.length !== status.filter(outcome => Boolean(outcome)).length) {
-      throw createError({
+      throw new ResponseError({
         message: 'Permission denied to access route.',
         code: HTTPStatus.UNAUTHORIZED,
       });

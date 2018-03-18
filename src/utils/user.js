@@ -1,6 +1,7 @@
 const HTTPStatus = require('http-status');
 const { authPackage } = require('./auth');
-const { createError, checkString } = require('./helpers');
+const { checkString } = require('./helpers');
+const { ResponseError } = require('./errors');
 
 /**
  * Create and save a token with a user.
@@ -22,19 +23,19 @@ module.exports.createToken = createToken;
 function login({ Token, secret } = {}) {
   checkString(secret, { method: 'login' });
   if (!Token) {
-    throw createError({ message: 'Parameters missing to login function; needs token model or secret.' });
+    throw new ResponseError({ message: 'Parameters missing to login function; needs token model or secret.' });
   }
   return async ({ Model, body: { email, password } }) => {
     const user = await Model.findOne({ email });
     if (!user) {
-      throw createError({
+      throw new ResponseError({
         message: 'No user was found for the given email.',
         code: HTTPStatus.NOT_FOUND,
       });
     }
     const match = await user.comparePassword(password);
     if (!match) {
-      throw createError({
+      throw new ResponseError({
         message: 'Password is incorrect.',
         code: HTTPStatus.BAD_REQUEST,
       });
@@ -56,12 +57,12 @@ module.exports.login = login;
 function register({ Token, secret } = {}) {
   checkString(secret, { method: 'login' });
   if (!Token) {
-    throw createError({ message: 'Parameters missing to login function; needs token model or secret.' });
+    throw new ResponseError({ message: 'Parameters missing to login function; needs token model or secret.' });
   }
   return async ({ Model, body }) => {
     const user = await Model.create(body);
     if (!user) {
-      throw createError({ message: 'Error occurred while creating user.' });
+      throw new ResponseError({ message: 'Error occurred while creating user.' });
     }
     const auth = await createToken({ Token, user, secret });
     return {

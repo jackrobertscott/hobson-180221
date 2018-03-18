@@ -1,7 +1,8 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
-const { formatResponse, createError } = require('./utils/helpers');
+const { formatResponse } = require('./utils/helpers');
+const { ResponseError } = require('./utils/errors');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
 const TokenResource = require('./token.resource');
 
@@ -21,7 +22,7 @@ function parseRequest(app, parse) {
 function catchErrors(app, debug) {
   return app
     .use((req, res, next) => {
-      const error = createError({
+      const error = new ResponseError({
         message: 'Request address does not exist on the api.',
         code: HTTPStatus.NOT_FOUND,
       });

@@ -4,7 +4,7 @@ const Resource = require('./resource');
 const UserResource = require('./user.resource');
 const TokenResource = require('./token.resource');
 const connect = require('./connect');
-const { createError } = require('./utils/helpers');
+const { ResponseError } = require('./utils/errors');
 const permissions = require('./permissions');
 
 module.exports = {
@@ -12,6 +12,6 @@ module.exports = {
   UserResource,
   TokenResource,
   connect,
-  createError,
+  ResponseError,
   permissions,
 };

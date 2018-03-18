@@ -1,7 +1,8 @@
 const { camelCase } = require('change-case');
 const { plural, singular } = require('pluralize');
 const HTTPStatus = require('http-status');
-const { checkString, checkObjectId, createError } = require('./helpers');
+const { checkString, checkObjectId } = require('./helpers');
+const { ResponseError } = require('./errors');
 
 /**
  * Find many items in the database.
@@ -20,7 +21,7 @@ function find(name) {
     if (limit) query.limit(Number(limit));
     const value = await query.exec();
     if (!value) {
-      throw createError({ message: `Error occurred when attempting to query the "${name}" model.` });
+      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
     return {
       [plural(name)]: value,
@@ -44,7 +45,7 @@ function findOne(name) {
     if (select) query.select(select);
     const value = await query.exec();
     if (!value) {
-      throw createError({
+      throw new ResponseError({
         message: `Model ${name} did not have an item with the id "${id}".`,
         code: HTTPStatus.NOT_FOUND,
       });
@@ -66,7 +67,7 @@ function create(name) {
   return async ({ body, Model }) => {
     const value = await Model.create(body);
     if (!value) {
-      throw createError({ message: `Error occurred creating an item for "${name}" model.` });
+      throw new ResponseError({ message: `Error occurred creating an item for "${name}" model.` });
     }
     return {
       [singular(name)]: value,
@@ -87,7 +88,7 @@ function update(name) {
     checkObjectId(id);
     const value = await Model.findById(id);
     if (!value) {
-      throw createError({
+      throw new ResponseError({
         message: `Model ${name} did not have an item with the id "${id}".`,
         code: HTTPStatus.NOT_FOUND,
       });
