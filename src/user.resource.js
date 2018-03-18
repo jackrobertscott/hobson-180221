@@ -16,6 +16,7 @@ class UserResource extends Resource {
       password: {
         type: String,
         required: true,
+        select: false,
       },
     });
     this.schema.pre('save', function preSave(next) {
