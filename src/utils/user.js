@@ -55,7 +55,7 @@ module.exports.login = login;
  * Register (sign up) a new user.
  */
 function register({ Token, secret } = {}) {
-  checkString(secret, { method: 'login' });
+  checkString(secret, { method: 'register' });
   if (!Token) {
     throw new ResponseError({ message: 'Parameters missing to login function; needs token model or secret.' });
   }
