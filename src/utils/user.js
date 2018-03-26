@@ -26,7 +26,7 @@ function login({ Token, secret } = {}) {
     throw new ResponseError({ message: 'Parameters missing to login function; needs token model or secret.' });
   }
   return async ({ Model, body: { email, password } }) => {
-    const user = await Model.findOne({ email }).select('password');
+    const user = await Model.findOne({ email: { $regex: new RegExp(email, 'i') } }).select('password');
     if (!user) {
       throw new ResponseError({
         message: 'No user was found for the given email.',
@@ -60,6 +60,13 @@ function register({ Token, secret } = {}) {
     throw new ResponseError({ message: 'Parameters missing to login function; needs token model or secret.' });
   }
   return async ({ Model, body }) => {
+    const existing = await Model.findOne({ email: { $regex: new RegExp(body.email, 'i') } });
+    if (existing) {
+      throw new ResponseError({
+        message: 'User already exists with this email.',
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
     const user = await Model.create(body);
     if (!user) {
       throw new ResponseError({ message: 'Error occurred while creating user.' });
