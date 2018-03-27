@@ -98,7 +98,9 @@ The hobson resource creates endpoints for you like you would on a regular RESTfu
 | Type          | Method      | Endpoint                | Example                                 |
 |---------------|-------------|-------------------------|-----------------------------------------|
 | `find`        | get         | `/unicorns`             | `/unicorns?filter[color]=purple`        |
-| `findOne`     | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `count`       | get         | `/unicorns/count`       | `/unicorns/count?filter[color]=yellow`  |
+| `findOne`     | get         | `/unicorns/one`         | `/unicorns/one?include=horns`           |
+| `findById`    | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `create`      | post        | `/unicorns`             | `/unicorns`                             |
 | `update`      | patch       | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
