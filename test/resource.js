@@ -87,6 +87,46 @@ describe('Standard resource', () => {
       expect(data.examples).to.have.lengthOf(1);
     }));
 
+  it('should count number of examples', () => server.get('/examples/count')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('count', 2);
+    }));
+
+  it('should count number of examples', () => server.get('/examples/count?filter[comments]=10')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('count', 1);
+    }));
+
+  it('should get one example', () => server.get('/examples/one')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data.example).to.have.property('title');
+    }));
+
+  it('should get the right example', () => server.get('/examples/one?filter[comments]=10')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data.example).to.have.property('title', 'Example title two.');
+    }));
+
   it('should get one example', () => server.get(`/examples/${String(examples[0].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)

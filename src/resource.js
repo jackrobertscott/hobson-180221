@@ -12,7 +12,9 @@ const {
 } = require('./utils/helpers');
 const {
   find,
+  count,
   findOne,
+  findById,
   create,
   update,
   remove,
@@ -100,10 +102,20 @@ class Resource {
         method: 'get',
         handler: find(this.resourceName),
       })
+      .set('count', {
+        path: '/count',
+        method: 'get',
+        handler: count(this.resourceName),
+      })
       .set('findOne', {
-        path: `/:${this.resourceName}Id`,
+        path: '/one',
         method: 'get',
         handler: findOne(this.resourceName),
+      })
+      .set('findById', {
+        path: `/:${this.resourceName}Id`,
+        method: 'get',
+        handler: findById(this.resourceName),
       })
       .set('create', {
         path: '/',

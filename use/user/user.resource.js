@@ -15,6 +15,6 @@ userResource
   .addPermission('check', access.isUser());
 
 userResource
-  .addPermission('findOne', access.isUser());
+  .addPermission('findById', access.isUser());
 
 module.exports = userResource;

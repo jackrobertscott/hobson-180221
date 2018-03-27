@@ -31,12 +31,59 @@ function find(name) {
 module.exports.find = find;
 
 /**
- * Find one item in the database by it's id.
+ * Count the number of items in the database.
+ *
+ * @param {string} name the resource name
+ */
+function count(name) {
+  checkString(name, { method: camelCase(`count${name}`) });
+  return async ({ query: { filter }, Model }) => {
+    const query = Model.count();
+    if (filter) query.where(filter);
+    const value = await query.exec();
+    if (typeof value !== 'number') {
+      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
+    }
+    return {
+      count: value,
+    };
+  };
+}
+module.exports.count = count;
+
+/**
+ * Find one item in the database.
  *
  * @param {string} name the resource name
  */
 function findOne(name) {
   checkString(name, { method: camelCase(`findOne${name}`) });
+  return async ({ Model, query: { filter, include, select } }) => {
+    const query = Model.findOne();
+    if (filter) query.where(filter);
+    if (include) query.populate(include);
+    if (select) query.select(select);
+    const value = await query.exec();
+    if (!value) {
+      throw new ResponseError({
+        message: `Model ${name} did not have an item with the given parameters.`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
+    return {
+      [singular(name)]: value,
+    };
+  };
+}
+module.exports.findOne = findOne;
+
+/**
+ * Find one item in the database by it's id.
+ *
+ * @param {string} name the resource name
+ */
+function findById(name) {
+  checkString(name, { method: camelCase(`findById${name}`) });
   return async ({ params, Model, query: { include, select } }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
@@ -55,7 +102,7 @@ function findOne(name) {
     };
   };
 }
-module.exports.findOne = findOne;
+module.exports.findById = findById;
 
 /**
  * Create a resource item in the database.

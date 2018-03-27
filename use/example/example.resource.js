@@ -60,7 +60,9 @@ example
  */
 example
   .addPermission('find', () => true)
+  .addPermission('count', () => true)
   .addPermission('findOne', () => true)
+  .addPermission('findById', () => true)
   .addPermission('create', () => true)
   .addPermission('update', () => true)
   .addPermission('remove', () => true);
