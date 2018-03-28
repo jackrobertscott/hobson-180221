@@ -100,9 +100,22 @@ function hookify(key, handler, preHooks, postHooks) {
     try {
       data = await handler(...args);
     } catch (e) {
-      if (e && e.name === 'ValidationError') {
+      if (!e) {
+        throw new ResponseError({
+          message: 'Error occurred on the server.',
+          code: HTTPStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+      if (e.name === 'ValidationError') {
         throw new ResponseError({
           message: e._message || 'Request validation failed.',
+          code: HTTPStatus.BAD_REQUEST,
+          data: e.errors,
+        });
+      }
+      if (e.name === 'MongoError') {
+        throw new ResponseError({
+          message: e.message || 'Error occurred when working with database.',
           code: HTTPStatus.BAD_REQUEST,
           data: e.errors,
         });
