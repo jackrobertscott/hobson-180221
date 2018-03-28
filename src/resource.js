@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
+const Route = require('./route');
 const {
   checkString,
   checkCompile,
@@ -144,6 +145,15 @@ class Resource {
     } catch (e) {
       return mongoose.model(this.name, this.schema);
     }
+  }
+
+  /**
+   * Create a route for easy use of resource.
+   *
+   * @param {string} id the id of the endpoint
+   */
+  route(id) {
+    return new Route({ id, resource: this });
   }
 
   /**

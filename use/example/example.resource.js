@@ -61,11 +61,12 @@ example
 example
   .addPermission('find', () => true)
   .addPermission('count', () => true)
-  .addPermission('findOne', () => true)
-  .addPermission('findById', () => true)
-  .addPermission('create', () => true)
-  .addPermission('update', () => true)
-  .addPermission('remove', () => true);
+  .addPermission('findOne', () => true);
+
+example.route('findById').addPermission(() => true);
+example.route('create').addPermission(() => true);
+example.route('update').addPermission(() => true);
+example.route('remove').addPermission(() => true);
 
 /**
  * Hooks
@@ -75,12 +76,15 @@ example
     if (context.messageOne !== 'Jack is awesome' || context.messageTwo !== 'Jack is cool') {
       throw new Error('This will not be called as my function is baller af.');
     }
-  })
-  .addPreHook('find', ({ context }) => {
+  });
+
+example.route('find')
+  .addPreHook(({ context }) => {
     Object.assign(context, { messageOne: 'Jack is awesome' });
   })
-  .addPreHook('find', ({ context }) => {
+  .addPreHook(({ context }) => {
     Object.assign(context, { messageTwo: 'Jack is cool' });
   });
+
 
 module.exports = example;
