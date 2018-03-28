@@ -1,16 +1,18 @@
 const jwt = require('jsonwebtoken');
+const HTTPStatus = require('http-status');
+const { ResponseError } = require('./errors');
 
 /**
  * Generate an authentication token which can be sent to the client to
  * verify future requests.
  */
-function generateToken(payload, secret, data = {}) {
-  const options = Object.assign({
+function generateToken(payload, secret, options = {}) {
+  const data = Object.assign({
     expiresIn: '30d',
-  }, data);
+  }, options);
   return {
-    ...options,
-    token: jwt.sign(payload, secret, options),
+    ...data,
+    token: jwt.sign(payload, secret, data),
   };
 }
 module.exports.generateToken = generateToken;
@@ -26,8 +28,8 @@ module.exports.decodeToken = decodeToken;
 /**
  * Package the authentication.
  */
-function authPackage(payload, secret) {
-  const { token } = generateToken(payload, secret);
+function authPackage(payload, secret, options) {
+  const { token } = generateToken(payload, secret, options);
   const { iat, exp } = decodeToken(token, secret);
   return {
     token,
@@ -53,6 +55,11 @@ function tokenPopulate({ Model, secret }) {
       .then((issue) => {
         if (issue.active) {
           Object.assign(req, { auth: issue });
+        } else {
+          throw new ResponseError({
+            message: 'Token is not active. Please reauthenticate.',
+            code: HTTPStatus.UNAUTHORIZED,
+          });
         }
         next();
       })

@@ -168,4 +168,107 @@ describe('User resource', () => {
       expect(message).to.equal('Password is incorrect.');
     }));
 
+  it('should fail to change a user password', () => server.post('/users/password/change')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      oldPassword: 'wrongPassword',
+      newPassword: 'coolioMcCool',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('Current password is incorrect.');
+    }));
+
+  it('should change a user password', () => server.post('/users/password/change')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      oldPassword: password,
+      newPassword: 'coolioMcCool',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      password = 'coolioMcCool'; // update the testing password too
+    }));
+
+  it('should fail if an email is not provided', () => server.post('/users/password/forgot')
+    .set('Accept', 'application/json')
+    .send({})
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error requesting a new password.');
+    }));
+
+  it('should request a new password', () => server.post('/users/password/forgot')
+    .set('Accept', 'application/json')
+    .send({ email: users[0].email })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(Object.keys(data).length).to.equal(0);
+    }));
+
+  it('should fail to reset a password when missing token', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .send({})
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.UNAUTHORIZED);
+    }));
+
+  it('should fail to reset a password when missing new password', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({ email: users[0].email })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message, data } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error resetting password.');
+      expect(data).to.have.property('newPassword');
+      expect(data).to.not.have.property('email');
+    }));
+
+  it('should fail to reset a password when missing email', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({ newPassword: 'otherMcKnow' })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message, data } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error resetting password.');
+      expect(data).to.have.property('email');
+      expect(data).to.not.have.property('newPassword');
+    }));
+
+  it('should reset a users password', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      email: users[0].email,
+      newPassword: 'someOtherCoolPassword',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(Object.keys(data).length).to.equal(0);
+    })
+    .then(() => User.findOne({ email: users[0].email }).select('password'))
+    .then(async checkUser => ({
+      newPass: await checkUser.comparePassword('someOtherCoolPassword'),
+      oldPass: await checkUser.comparePassword(password),
+    }))
+    .then(({ newPass, oldPass }) => expect(newPass).to.equal(true) && expect(oldPass).to.equal(false)));
+
 });

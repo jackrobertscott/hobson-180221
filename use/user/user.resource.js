@@ -15,6 +15,9 @@ userResource
   .addPermission('check', access.isUser());
 
 userResource
-  .addPermission('findById', access.isUser());
+  .addPermission('findById', access.isUser())
+  .addPermission('changePassword', access.isUser())
+  .addPermission('forgotPassword', access.isAnyone())
+  .addPermission('resetPassword', access.isTokenized());
 
 module.exports = userResource;

@@ -1,7 +1,14 @@
 const bcrypt = require('bcryptjs');
 const Resource = require('./resource');
-const { login, register, logout } = require('./utils/user');
 const { emailRegex } = require('./utils/helpers');
+const {
+  login,
+  register,
+  logout,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+} = require('./utils/user');
 
 class UserResource extends Resource {
 
@@ -63,6 +70,21 @@ class UserResource extends Resource {
       method: 'get',
       open: true,
       handler: logout(options),
+    });
+    this.addEndpoint('changePassword', {
+      path: '/password/change',
+      method: 'post',
+      handler: changePassword(options),
+    });
+    this.addEndpoint('forgotPassword', {
+      path: '/password/forgot',
+      method: 'post',
+      handler: forgotPassword(options),
+    });
+    this.addEndpoint('resetPassword', {
+      path: '/password/reset',
+      method: 'post',
+      handler: resetPassword(options),
     });
   }
 
