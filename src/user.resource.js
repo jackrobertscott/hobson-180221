@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Resource = require('./resource');
 const { login, register, logout } = require('./utils/user');
+const { emailRegex } = require('./utils/helpers');
 
 class UserResource extends Resource {
 
@@ -12,6 +13,10 @@ class UserResource extends Resource {
         type: String,
         required: true,
         unique: true,
+        validate: {
+          validator: email => emailRegex.test(email),
+          message: 'not a valid email format e.g. example@email.com',
+        },
       },
       password: {
         type: String,
