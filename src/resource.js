@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const mongooseDelete = require('mongoose-delete');
 const { Router } = require('express');
 const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
@@ -78,7 +77,20 @@ class Resource {
       schema.set('timestamps', true);
     }
     if (safe) {
-      schema.plugin(mongooseDelete, { deletedAt: timestamps });
+      schema.add({
+        deleted: {
+          type: Boolean,
+          required: true,
+          default: false,
+        },
+      });
+      if (timestamps) {
+        schema.add({
+          deletedAt: {
+            type: Date,
+          },
+        });
+      }
     }
     this.setup = false;
     this.unsecure = unsecure;

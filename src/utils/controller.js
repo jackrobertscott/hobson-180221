@@ -159,13 +159,22 @@ module.exports.update = update;
  *
  * @param {string} name the resource name
  */
-function remove(name, { safe }) {
+function remove(name, { safe, timestamps }) {
   checkString(name, { method: camelCase(`remove${name}`) });
   return async ({ params, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
     if (safe) {
-      await Model.delete({ _id: id });
+      const value = await Model.findById(id);
+      if (!value) {
+        throw new ResponseError({
+          message: `Model ${name} did not have an item with the id "${id}".`,
+          code: HTTPStatus.NOT_FOUND,
+        });
+      }
+      const body = { deleted: true };
+      if (timestamps) body.deletedAt = new Date();
+      await Object.assign(value, body).save();
     } else {
       await Model.findByIdAndRemove(id);
     }
