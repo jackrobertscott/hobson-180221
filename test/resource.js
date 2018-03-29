@@ -35,6 +35,16 @@ describe('Standard resource', () => {
   it('should have the correct address', () => expect(exampleResource.address).to.equal('/examples'));
   it('should have the correct model name', () => expect(exampleResource.name).to.equal('Example'));
 
+  it('should show the correct environment check', () => server.get('/')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('environment', 'test');
+    }));
+
   it('should get all examples', () => server.get('/examples')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)

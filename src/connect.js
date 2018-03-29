@@ -36,6 +36,22 @@ function catchErrors(app, debug) {
 }
 
 /**
+ * Add a health check route.
+ */
+function environmentCheck(app) {
+  const response = formatResponse({
+    data: {
+      environment: process.env.NODE_ENV,
+    },
+  });
+  app.get('/', (req, res, next) => {
+    res.status(response.code)
+      .json(response);
+    next();
+  });
+}
+
+/**
  * Connect resources to the express app.
  *
  * @param {Object} options.app the express app instance
@@ -79,9 +95,7 @@ function connect({
     });
   }
   resources.forEach(resource => resource.attach(app));
-  app.get('/', (req, res) => res.status(HTTPStatus.OK).send({
-    environment: process.env.NODE_ENV,
-  }));
+  environmentCheck(app);
   catchErrors(app, debug);
 }
 module.exports = connect;
