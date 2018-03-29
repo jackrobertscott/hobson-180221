@@ -44,10 +44,9 @@ function environmentCheck(app) {
       environment: process.env.NODE_ENV,
     },
   });
-  app.get('/', (req, res, next) => {
+  app.get('/', (req, res) => {
     res.status(response.code)
       .json(response);
-    next();
   });
 }
 

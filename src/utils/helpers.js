@@ -90,7 +90,6 @@ function middlify(middleware, resources, finish = false) {
           const response = formatResponse({ data });
           res.status(response.code)
             .json(response);
-          next();
         } else {
           next();
         }
