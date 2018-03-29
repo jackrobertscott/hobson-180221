@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongooseDelete = require('mongoose-delete');
 const { Router } = require('express');
 const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
@@ -59,6 +60,7 @@ class Resource {
     disable = [],
     unsecure = false,
     timestamps = true,
+    safe = true,
   } = {}) {
     if (typeof name !== 'string') {
       throw new Error('Parameter "name" must be given to the Resource constructor as a string.');
@@ -72,12 +74,19 @@ class Resource {
     if (address && typeof address !== 'string') {
       throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
     }
+    if (timestamps) {
+      schema.set('timestamps', true);
+    }
+    if (safe) {
+      schema.plugin(mongooseDelete, { deletedAt: timestamps });
+    }
     this.setup = false;
     this.unsecure = unsecure;
     this.resourceName = camelCase(singular(name));
     this.address = address || `/${camelCase(plural(name))}`;
     this.name = name;
     this.schema = schema;
+    this.options = { timestamps, safe };
     this.disable = new Set(disable);
     const endpoints = [...this.defaults.entries()]
       .map(Resource.formatEndpoint)
@@ -87,9 +96,6 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
-    if (timestamps) {
-      this.schema.set('timestamps', true);
-    }
   }
 
   /**
@@ -101,37 +107,37 @@ class Resource {
       .set('find', {
         path: '/',
         method: 'get',
-        handler: find(this.resourceName),
+        handler: find(this.resourceName, this.options),
       })
       .set('count', {
         path: '/count',
         method: 'get',
-        handler: count(this.resourceName),
+        handler: count(this.resourceName, this.options),
       })
       .set('findOne', {
         path: '/one',
         method: 'get',
-        handler: findOne(this.resourceName),
+        handler: findOne(this.resourceName, this.options),
       })
       .set('findById', {
         path: `/:${this.resourceName}Id`,
         method: 'get',
-        handler: findById(this.resourceName),
+        handler: findById(this.resourceName, this.options),
       })
       .set('create', {
         path: '/',
         method: 'post',
-        handler: create(this.resourceName),
+        handler: create(this.resourceName, this.options),
       })
       .set('update', {
         path: `/:${this.resourceName}Id`,
         method: 'patch',
-        handler: update(this.resourceName),
+        handler: update(this.resourceName, this.options),
       })
       .set('remove', {
         path: `/:${this.resourceName}Id`,
         method: 'delete',
-        handler: remove(this.resourceName),
+        handler: remove(this.resourceName, this.options),
       });
     return routes;
   }

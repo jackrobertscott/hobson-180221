@@ -187,7 +187,7 @@ describe('Standard resource', () => {
       expect(data.example).to.have.property('comments', 25);
     }));
 
-  it('should get delete an example', () => server.delete(`/examples/${String(examples[1].id)}`)
+  it('should delete an example', () => server.delete(`/examples/${String(examples[1].id)}`)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
@@ -197,7 +197,7 @@ describe('Standard resource', () => {
       expect(data.example).to.equal(null);
     })
     .then(async () => {
-      const count = await Example.count({});
+      const count = await Example.count({ deleted: false });
       expect(count).to.equal(2);
     }));
 
