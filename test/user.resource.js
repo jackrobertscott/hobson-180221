@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const { connect } = require('../lib/index');
 const faker = require('faker');
 const app = require('../use/app')();
-const { createToken } = require('../src/utils/user');
+const { createToken } = require('../lib/utils/user');
 const userResource = require('../use/user/user.resource');
 
 const secret = 'ajsdgfadfakjsdhfkjk';
