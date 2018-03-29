@@ -11,7 +11,7 @@ module.exports = {
   Resource,
   UserResource,
   TokenResource,
-  connect,
   ResponseError,
+  connect,
   access,
 };

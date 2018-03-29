@@ -70,20 +70,30 @@ module.exports.formatResponse = formatResponse;
 /**
  * Format middleware to match express infrastructure.
  */
-function middlify(middleware, resources, end = false) {
-  return (req, res, next) => (async () => middleware({
-    req,
-    res,
-    next,
-    body: req.body || {},
-    params: req.params || {},
-    query: req.query || {},
-    user: req.user,
-    auth: req.auth,
-    ...resources,
-  }))()
-    .then(data => end ? res.status(200).json(formatResponse({ data })) : next())
-    .catch(error => res.status(error.code || HTTPStatus.INTERNAL_SERVER_ERROR).json(formatResponse(error)));
+function middlify(middleware, resources, finish = false) {
+  const exec = async (...args) => middleware(...args);
+  return (req, res, next) => {
+    const options = {
+      req,
+      res,
+      next,
+      body: req.body || {},
+      params: req.params || {},
+      query: req.query || {},
+      user: req.user,
+      auth: req.auth,
+      ...resources,
+    };
+    exec(options)
+      .then((data) => {
+        if (finish) {
+          res.status(200).json(formatResponse({ data }));
+        } else {
+          next();
+        }
+      })
+      .catch(next);
+  };
 }
 module.exports.middlify = middlify;
 
@@ -91,39 +101,37 @@ module.exports.middlify = middlify;
  * Format hooks and execute work.
  */
 function hookify(key, handler, preHooks, postHooks) {
-  return async (...args) => {
+  return async (options) => {
     if (preHooks.has(key)) {
-      const tasks = preHooks.get(key).map(hook => hook(...args));
+      const tasks = preHooks.get(key).map(hook => hook(options));
       await Promise.all(tasks);
     }
     let data;
     try {
-      data = await handler(...args);
+      data = await handler(options);
     } catch (e) {
-      if (!e) {
-        throw new ResponseError({
-          message: 'Error occurred on the server.',
-          code: HTTPStatus.INTERNAL_SERVER_ERROR,
-        });
-      }
-      if (e.name === 'ValidationError') {
+      if (e && e.name === 'ValidationError') {
         throw new ResponseError({
           message: e._message || 'Request validation failed.',
           code: HTTPStatus.BAD_REQUEST,
           data: e.errors,
         });
       }
-      if (e.name === 'MongoError') {
+      if (e && e.name === 'MongoError') {
         throw new ResponseError({
           message: e.message || 'Error occurred when working with database.',
           code: HTTPStatus.BAD_REQUEST,
           data: e.errors,
         });
       }
-      throw e;
+      throw e || new ResponseError({
+        message: 'Error occurred on the server.',
+        code: HTTPStatus.INTERNAL_SERVER_ERROR,
+      });
     }
     if (postHooks.has(key)) {
-      const tasks = postHooks.get(key).map(hook => hook({ ...args[0], data }, ...args.slice(1)));
+      Object.assign(options, { data });
+      const tasks = postHooks.get(key).map(hook => hook(options));
       await Promise.all(tasks);
     }
     return data;
@@ -143,7 +151,7 @@ function permissionify(key, permissions, defaultOpen) {
     const status = await Promise.all(checks);
     if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
       throw new ResponseError({
-        message: 'Permission denied to access route.',
+        message: 'Permission denied to route.',
         code: HTTPStatus.UNAUTHORIZED,
       });
     }
