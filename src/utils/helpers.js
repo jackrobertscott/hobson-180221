@@ -1,14 +1,15 @@
 const { Types } = require('mongoose');
 const HTTPStatus = require('http-status');
-
-const { ObjectId } = Types;
+const { ResponseError } = require('./errors');
 
 /**
  * Check an parameter is a string or throw an error.
  */
-function checkString(chars, { method, message } = {}) {
-  if (typeof chars !== 'string') {
-    throw new Error(message || `String parameter must be given to the ${method || 'unknown'} method.`);
+function checkString(check, { method, message } = {}) {
+  if (typeof check !== 'string') {
+    throw new ResponseError({
+      message: message || `Parameter of type string is missing on the ${method || 'unknown'} method.`,
+    });
   }
 }
 module.exports.checkString = checkString;
@@ -18,7 +19,9 @@ module.exports.checkString = checkString;
  */
 function checkCompile(compile) {
   if (compile) {
-    throw new Error('Resource can not be change once it has been compiled.');
+    throw new ResponseError({
+      message: 'Resource can not be change once it has been compiled.',
+    });
   }
 }
 module.exports.checkCompile = checkCompile;
@@ -26,46 +29,39 @@ module.exports.checkCompile = checkCompile;
 /**
  * Check if the id of an item is a valid.
  */
-function checkObjectId(id, { message } = {}) {
-  if (!id || !ObjectId.isValid(id)) {
-    const error = new Error(message || 'Request did not contain a valid id.');
-    error.code = HTTPStatus.BAD_REQUEST;
-    throw error;
+function checkObjectId(id) {
+  if (!id || !Types.ObjectId.isValid(id)) {
+    throw new ResponseError({
+      message: 'Request did not contain a valid id.',
+      code: HTTPStatus.BAD_REQUEST,
+    });
   }
 }
 module.exports.checkObjectId = checkObjectId;
 
 /**
- * Check that an item exists.
- */
-function checkExists(value, { message } = {}) {
-  if (!value) {
-    const error = new Error(message || 'No items were found for the given request.');
-    error.code = HTTPStatus.NOT_FOUND;
-    throw error;
-  }
-}
-module.exports.checkExists = checkExists;
-
-/**
  * Format response.
  */
-function formatResponse(data, debug) {
-  if (data instanceof Error) {
+function formatResponse(response = {}, debug = false) {
+  if (response instanceof Error) {
+    const { status, code, data, message, stack } = response;
     const error = {
-      status: data.status || 'error',
-      code: data.code || HTTPStatus.INTERNAL_SERVER_ERROR,
-      message: data.message || 'There was an error on the server.',
-      data: {
-        ...(typeof data.data === 'object' ? data.data : {}),
-        stack: debug && data.stack ? data.stack : {},
-      },
+      status: status || 'error',
+      code: code || HTTPStatus.INTERNAL_SERVER_ERROR,
+      message: message || 'There was an error on the server.',
     };
+    if (debug && stack) {
+      error.stack = stack;
+    }
+    if (data) {
+      error.data = data;
+    }
     return error;
   }
+  const { status, code, data } = response;
   return {
-    status: 'success',
-    code: HTTPStatus.OK,
+    status: status || 'success',
+    code: code || HTTPStatus.OK,
     data,
   };
 }
@@ -74,18 +70,32 @@ module.exports.formatResponse = formatResponse;
 /**
  * Format middleware to match express infrastructure.
  */
-function middlify(middleware, resources, end = false) {
-  return (req, res, next) => (async () => middleware({
-    req,
-    res,
-    next,
-    params: req.params,
-    body: req.body,
-    query: req.query,
-    ...resources,
-  }))()
-    .then(data => end ? res.status(200).json(formatResponse(data)) : next())
-    .catch(error => res.status(error.code || HTTPStatus.INTERNAL_SERVER_ERROR).json(formatResponse(error)));
+function middlify(middleware, resources, finish = false) {
+  const exec = async (...args) => middleware(...args);
+  return (req, res, next) => {
+    const options = {
+      req,
+      res,
+      next,
+      body: req.body || {},
+      params: req.params || {},
+      query: req.query || {},
+      user: req.user,
+      auth: req.auth,
+      ...resources,
+    };
+    exec(options)
+      .then((data) => {
+        if (finish) {
+          const response = formatResponse({ data });
+          res.status(response.code)
+            .json(response);
+        } else {
+          next();
+        }
+      })
+      .catch(next);
+  };
 }
 module.exports.middlify = middlify;
 
@@ -93,26 +103,37 @@ module.exports.middlify = middlify;
  * Format hooks and execute work.
  */
 function hookify(key, handler, preHooks, postHooks) {
-  return async (...args) => {
+  return async (options) => {
     if (preHooks.has(key)) {
-      const tasks = preHooks.get(key).map(hook => hook(...args));
+      const tasks = preHooks.get(key).map(hook => hook(options));
       await Promise.all(tasks);
     }
     let data;
     try {
-      data = await handler(...args);
+      data = await handler(options);
     } catch (e) {
       if (e && e.name === 'ValidationError') {
-        const error = new Error(e._message || 'Request validation failed');
-        error.code = HTTPStatus.BAD_REQUEST;
-        error.data = e.errors;
-        error.status = 'fail';
-        throw error;
+        throw new ResponseError({
+          message: e._message || 'Request validation failed.',
+          code: HTTPStatus.BAD_REQUEST,
+          data: e.errors,
+        });
       }
-      throw e;
+      if (e && e.name === 'MongoError') {
+        throw new ResponseError({
+          message: e.message || 'Error occurred when working with database.',
+          code: HTTPStatus.BAD_REQUEST,
+          data: e.errors,
+        });
+      }
+      throw e || new ResponseError({
+        message: 'Error occurred on the server.',
+        code: HTTPStatus.INTERNAL_SERVER_ERROR,
+      });
     }
     if (postHooks.has(key)) {
-      const tasks = postHooks.get(key).map(hook => hook({ ...args[0], data }, ...args.slice(1)));
+      Object.assign(options, { data });
+      const tasks = postHooks.get(key).map(hook => hook(options));
       await Promise.all(tasks);
     }
     return data;
@@ -123,18 +144,18 @@ module.exports.hookify = hookify;
 /**
  * Check permissions.
  */
-function permissionify(key, permissions) {
+function permissionify(key, permissions, defaultOpen) {
   return async (...args) => {
     let checks = [];
     if (permissions.has(key)) {
       checks = permissions.get(key).map(check => check(...args));
     }
     const status = await Promise.all(checks);
-    if (!status.find(outcome => !!outcome)) {
-      const error = new Error('Permission denied to access route.');
-      error.code = HTTPStatus.UNAUTHORIZED;
-      error.status = 'fail';
-      throw error;
+    if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
+      throw new ResponseError({
+        message: 'Permission denied to route.',
+        code: HTTPStatus.UNAUTHORIZED,
+      });
     }
   };
 }
@@ -161,3 +182,8 @@ function orderRoutes(a, b) {
   return bSegments.length - aSegments.length;
 }
 module.exports.orderRoutes = orderRoutes;
+
+/**
+ * Email validation regex.
+ */
+module.exports.emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Router } = require('express');
 const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
+const Route = require('./route');
 const {
   checkString,
   checkCompile,
@@ -12,7 +13,9 @@ const {
 } = require('./utils/helpers');
 const {
   find,
+  count,
   findOne,
+  findById,
   create,
   update,
   remove,
@@ -23,17 +26,21 @@ class Resource {
   /**
    * Format an endpoint to make sure it matches correct standards.
    */
-  static formatEndpoint([id, { path, method, handler }]) {
-    checkString(id, { message: 'Endpoint id was not passed in as a string.' });
-    checkString(path, { message: 'Endpoint path was not passed in as a string.' });
-    checkString(method, { message: 'Endpoint method was not passed in as a string.' });
-    if (typeof handler !== 'function') {
-      throw new Error('Endpoint handler must be a function.');
+  static formatEndpoint([id, { path, method, handler, open = false } = {}]) {
+    checkString(id, { message: 'Expected "id" parameter to be a string.' });
+    checkString(path, { message: 'Expected "path" parameter to be a string.' });
+    checkString(method, { message: 'Expected "method" parameter to be a string.' });
+    if (typeof handler !== 'function' && typeof handler.then !== 'function') {
+      throw new Error('Expected "handler" parameter to be a function.');
+    }
+    if (typeof open !== 'boolean') {
+      throw new Error('Expected "public" parameter to be a boolean.');
     }
     return [id, {
       path,
       method: lowerCase(method),
       handler,
+      open,
     }];
   }
 
@@ -52,6 +59,7 @@ class Resource {
     disable = [],
     unsecure = false,
     timestamps = true,
+    safe = true,
   } = {}) {
     if (typeof name !== 'string') {
       throw new Error('Parameter "name" must be given to the Resource constructor as a string.');
@@ -71,12 +79,32 @@ class Resource {
     this.address = address || `/${camelCase(plural(name))}`;
     this.name = name;
     this.schema = schema;
+    this.options = { timestamps, safe };
     this.disable = new Set(disable);
-    this.endpoints = new Map([...this.defaults.entries()].map(Resource.formatEndpoint));
+    const endpoints = [...this.defaults.entries()]
+      .map(Resource.formatEndpoint)
+      .filter(endpoint => !this.disable.has(endpoint[0]));
+    this.endpoints = new Map(endpoints);
     this.middleware = new Map();
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
+    if (safe) {
+      this.schema.add({
+        deleted: {
+          type: Boolean,
+          required: true,
+          default: false,
+        },
+      });
+      if (timestamps) {
+        this.schema.add({
+          deletedAt: {
+            type: Date,
+          },
+        });
+      }
+    }
     if (timestamps) {
       this.schema.set('timestamps', true);
     }
@@ -91,27 +119,37 @@ class Resource {
       .set('find', {
         path: '/',
         method: 'get',
-        handler: find(this.resourceName),
+        handler: find(this.resourceName, this.options),
+      })
+      .set('count', {
+        path: '/count',
+        method: 'get',
+        handler: count(this.resourceName, this.options),
       })
       .set('findOne', {
+        path: '/one',
+        method: 'get',
+        handler: findOne(this.resourceName, this.options),
+      })
+      .set('findById', {
         path: `/:${this.resourceName}Id`,
         method: 'get',
-        handler: findOne(this.resourceName),
+        handler: findById(this.resourceName, this.options),
       })
       .set('create', {
         path: '/',
         method: 'post',
-        handler: create(this.resourceName),
+        handler: create(this.resourceName, this.options),
       })
       .set('update', {
         path: `/:${this.resourceName}Id`,
         method: 'patch',
-        handler: update(this.resourceName),
+        handler: update(this.resourceName, this.options),
       })
       .set('remove', {
         path: `/:${this.resourceName}Id`,
         method: 'delete',
-        handler: remove(this.resourceName),
+        handler: remove(this.resourceName, this.options),
       });
     return routes;
   }
@@ -125,6 +163,15 @@ class Resource {
     } catch (e) {
       return mongoose.model(this.name, this.schema);
     }
+  }
+
+  /**
+   * Create a route for easy use of resource.
+   *
+   * @param {string} id the id of the endpoint
+   */
+  route(id) {
+    return new Route({ id, resource: this });
   }
 
   /**
@@ -142,18 +189,6 @@ class Resource {
     if (typeof endpoint !== 'object') {
       throw new Error(`Endpoint data for ${id} must be an object.`);
     }
-    if (endpoint.middleware && Array.isArray(endpoint.middleware)) {
-      endpoint.middleware.forEach(item => this.addMiddleware(id, item));
-    }
-    if (endpoint.preHooks && Array.isArray(endpoint.preHooks)) {
-      endpoint.preHooks.forEach(item => this.addPreHook(id, item));
-    }
-    if (endpoint.postHooks && Array.isArray(endpoint.postHooks)) {
-      endpoint.postHooks.forEach(item => this.addPostHook(id, item));
-    }
-    if (endpoint.permissions && Array.isArray(endpoint.permissions)) {
-      endpoint.permissions.forEach(item => this.addPermission(id, item));
-    }
     const submission = Resource.formatEndpoint([id, endpoint]);
     this.endpoints.set(...submission);
     return this;
@@ -168,7 +203,7 @@ class Resource {
   addMiddleware(id, middleware) {
     checkCompile(this.setup);
     checkString(id, { method: 'addMiddleware' });
-    if (typeof middleware !== 'function') {
+    if (typeof middleware !== 'function' && typeof middleware.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
     }
     let tasks = [];
@@ -188,7 +223,7 @@ class Resource {
   addPreHook(id, hook) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPreHook' });
-    if (typeof hook !== 'function') {
+    if (typeof hook !== 'function' && typeof hook.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPreHook for "${id}".`);
     }
     let hooks = [];
@@ -208,7 +243,7 @@ class Resource {
   addPostHook(id, hook) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPostHook' });
-    if (typeof hook !== 'function') {
+    if (typeof hook !== 'function' && typeof hook.then !== 'function') {
       throw new Error(`Function not passed as "hook" parameter in addPostHook for "${id}".`);
     }
     let hooks = [];
@@ -228,7 +263,7 @@ class Resource {
   addPermission(id, permission) {
     checkCompile(this.setup);
     checkString(id, { method: 'addPermission' });
-    if (typeof permission !== 'function') {
+    if (typeof permission !== 'function' && typeof permission.then !== 'function') {
       throw new Error(`Function not passed as "permission" parameter in addPermission for "${id}".`);
     }
     let permissions = [];
@@ -250,20 +285,14 @@ class Resource {
     this.router = Router();
     [...this.endpoints.entries()]
       .sort(orderRoutes)
-      .forEach(([key, { path, method, handler }]) => {
-        if (this.disable.has(key)) {
-          return; // don't add endpoint if it is disabled
-        }
-        if (this.unsecure && !this.permissions.has(key)) {
-          // if the resource is "unsecure" and has no permission set then give public permission
-          this.permissions.set(key, [() => true]);
-        }
+      .forEach(([key, { path, method, handler, open }]) => {
+        const unsecure = typeof open === 'boolean' ? open : this.unsecure;
         const resources = {
-          model: this.model,
+          Model: this.model,
           context: {}, // empty object which can be used to pass information between middlewares
         };
         const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
-        const permission = middlify(permissionify(key, this.permissions), resources);
+        const permission = middlify(permissionify(key, this.permissions, unsecure), resources);
         const hooked = hookify(key, handler, this.preHooks, this.postHooks);
         const work = middlify(hooked, resources, true);
         this.router[lowerCase(method)](path, ...middleware, permission, work);
@@ -287,5 +316,4 @@ class Resource {
   }
 
 }
-
 module.exports = Resource;

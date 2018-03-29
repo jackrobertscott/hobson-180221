@@ -3,17 +3,18 @@ require('dotenv').config();
 const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
+const mongoose = require('mongoose');
 const { connect } = require('../lib/index');
 const faker = require('faker');
 const app = require('../use/app')();
-const { generateToken } = require('../src/utils/auth');
+const { createToken } = require('../lib/utils/user');
 const userResource = require('../use/user/user.resource');
 
+const secret = 'ajsdgfadfakjsdhfkjk';
 connect({
   app,
-  resources: [
-    userResource,
-  ],
+  resources: [userResource],
+  secret,
 });
 const User = userResource.model;
 const server = request(app);
@@ -22,7 +23,7 @@ describe('User resource', () => {
 
   let users;
   let password;
-  let token;
+  let userToken;
 
   before(async () => {
     await User.remove({});
@@ -35,7 +36,12 @@ describe('User resource', () => {
       password: faker.internet.password(),
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
-    token = generateToken(users[0], 'supersecretsecret');
+    const auth = await createToken({
+      Token: mongoose.model('Token'),
+      user: users[0],
+      secret,
+    });
+    userToken = auth.token;
   });
 
   it('should have the correct resource name', () => expect(userResource.resourceName).to.equal('user'));
@@ -51,6 +57,16 @@ describe('User resource', () => {
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.UNAUTHORIZED));
+
+  it('should getting one user', () => server.get(`/users/${String(users[0].id)}`)
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('user');
+    }));
 
   it('should fail to update a user', () => server.patch(`/users/${String(users[0].id)}`)
     .set('Accept', 'application/json')
@@ -102,6 +118,7 @@ describe('User resource', () => {
     .expect(({ body: { data, status, code } }) => {
       expect(status).to.equal('success');
       expect(code).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('auth');
       expect(data.auth).to.have.property('token');
     }));
 
@@ -115,7 +132,7 @@ describe('User resource', () => {
 
   it('should correctly authenticate a user', () => server.get('/users/check')
     .set('Accept', 'application/json')
-    .set('Authorization', token)
+    .set('Authorization', userToken)
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
       expect(status).to.equal('success');
@@ -150,5 +167,108 @@ describe('User resource', () => {
       expect(code).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('Password is incorrect.');
     }));
+
+  it('should fail to change a user password', () => server.post('/users/password/change')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      oldPassword: 'wrongPassword',
+      newPassword: 'coolioMcCool',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('Current password is incorrect.');
+    }));
+
+  it('should change a user password', () => server.post('/users/password/change')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      oldPassword: password,
+      newPassword: 'coolioMcCool',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      password = 'coolioMcCool'; // update the testing password too
+    }));
+
+  it('should fail if an email is not provided', () => server.post('/users/password/forgot')
+    .set('Accept', 'application/json')
+    .send({})
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error requesting a new password.');
+    }));
+
+  it('should request a new password', () => server.post('/users/password/forgot')
+    .set('Accept', 'application/json')
+    .send({ email: users[0].email })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(Object.keys(data).length).to.equal(0);
+    }));
+
+  it('should fail to reset a password when missing token', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .send({})
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.UNAUTHORIZED);
+    }));
+
+  it('should fail to reset a password when missing new password', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({ email: users[0].email })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message, data } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error resetting password.');
+      expect(data).to.have.property('newPassword');
+      expect(data).to.not.have.property('email');
+    }));
+
+  it('should fail to reset a password when missing email', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({ newPassword: 'otherMcKnow' })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, message, data } }) => {
+      expect(status).to.equal('fail');
+      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(message).to.equal('There was an error resetting password.');
+      expect(data).to.have.property('email');
+      expect(data).to.not.have.property('newPassword');
+    }));
+
+  it('should reset a users password', () => server.post('/users/password/reset')
+    .set('Accept', 'application/json')
+    .set('Authorization', userToken)
+    .send({
+      email: users[0].email,
+      newPassword: 'someOtherCoolPassword',
+    })
+    .expect('Content-Type', /json/)
+    .expect(({ body: { status, code, data } }) => {
+      expect(status).to.equal('success');
+      expect(code).to.equal(HTTPStatus.OK);
+      expect(Object.keys(data).length).to.equal(0);
+    })
+    .then(() => User.findOne({ email: users[0].email }).select('password'))
+    .then(async checkUser => ({
+      newPass: await checkUser.comparePassword('someOtherCoolPassword'),
+      oldPass: await checkUser.comparePassword(password),
+    }))
+    .then(({ newPass, oldPass }) => expect(newPass).to.equal(true) && expect(oldPass).to.equal(false)));
 
 });

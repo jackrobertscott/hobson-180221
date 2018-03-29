@@ -1,13 +1,19 @@
 const jwt = require('jsonwebtoken');
+const HTTPStatus = require('http-status');
+const { ResponseError } = require('./errors');
 
 /**
  * Generate an authentication token which can be sent to the client to
  * verify future requests.
  */
-function generateToken({ id, email, role }, secret) {
-  return jwt.sign({ id, email, role }, secret, {
-    expiresIn: '1m',
-  });
+function generateToken(payload, secret, options = {}) {
+  const data = Object.assign({
+    expiresIn: '30d',
+  }, options);
+  return {
+    ...data,
+    token: jwt.sign(payload, secret, data),
+  };
 }
 module.exports.generateToken = generateToken;
 
@@ -22,35 +28,57 @@ module.exports.decodeToken = decodeToken;
 /**
  * Package the authentication.
  */
-function authPackage(user, secret) {
+function authPackage(payload, secret, options) {
+  const { token } = generateToken(payload, secret, options);
+  const { iat, exp } = decodeToken(token, secret);
   return {
-    token: generateToken(user, secret),
-    id: user.id,
-    email: user.email,
+    token,
+    payload,
+    expires: exp,
+    iat,
   };
 }
 module.exports.authPackage = authPackage;
 
 /**
- * Authenticate a user.
+ * Populate a token found on the request.
  */
-async function authenticate({ req }) {
-  return req.auth && req.auth.id && req.user;
-}
-module.exports.authenticate = authenticate;
-
-/**
- * Populate authentication on request if auth found.
- */
-function authPopulate({ model }) {
+function tokenPopulate({ Model, secret }) {
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
       next();
       return;
     }
-    req.auth = decodeToken(req.headers.authorization, 'supersecretsecret');
-    if (req.auth && model) {
-      model.findById(req.auth.id)
+    const token = req.headers.authorization;
+    const auth = decodeToken(token, secret);
+    Model.findById(auth.id)
+      .then((issue) => {
+        if (issue.active) {
+          Object.assign(req, { auth: issue });
+        } else {
+          throw new ResponseError({
+            message: 'Token is not active. Please reauthenticate.',
+            code: HTTPStatus.UNAUTHORIZED,
+          });
+        }
+        next();
+      })
+      .catch(next);
+  };
+}
+module.exports.tokenPopulate = tokenPopulate;
+
+/**
+ * Populate authentication on request if auth found.
+ */
+function authPopulate({ Model }) {
+  return (req, res, next) => {
+    if (!req.auth) {
+      next();
+      return;
+    }
+    if (req.auth && Model) {
+      Model.findById(req.auth.payload.userId)
         .then((user) => {
           req.user = user;
           next();

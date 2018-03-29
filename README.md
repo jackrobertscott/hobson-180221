@@ -98,7 +98,9 @@ The hobson resource creates endpoints for you like you would on a regular RESTfu
 | Type          | Method      | Endpoint                | Example                                 |
 |---------------|-------------|-------------------------|-----------------------------------------|
 | `find`        | get         | `/unicorns`             | `/unicorns?filter[color]=purple`        |
-| `findOne`     | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
+| `count`       | get         | `/unicorns/count`       | `/unicorns/count?filter[color]=yellow`  |
+| `findOne`     | get         | `/unicorns/one`         | `/unicorns/one?include=horns`           |
+| `findById`    | get         | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `create`      | post        | `/unicorns`             | `/unicorns`                             |
 | `update`      | patch       | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
 | `remove`      | delete      | `/unicorns/:unicornId`  | `/unicorns/5a8ed7fabf4aabad60e41247`    |
@@ -161,6 +163,22 @@ unicornResource.addMiddleware('talkSmack', (req, res, next) => {
   next();
 });
 ```
+
+### Routes
+
+To make it easier to add functionality to a specific route, we have added a helpful function called `route`. This allows you to chain functionality to a single id.
+
+```js
+unicornResource.route('talkSmack')
+  .addPreHook(({ context }) => {
+    context.appendMessage = 'Hi Fred,';
+  })
+  .addPostHook(({ data, context }) => {
+    console.log(context.appendMessage, data); // Hi Fred, Yo mama!
+  })
+```
+
+Observe how, when you use the `route` function, you no longer need to include the `id` field (in this case it's `talkSmack`).
 
 ## Response Standards
 

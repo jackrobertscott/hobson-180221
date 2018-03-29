@@ -13,6 +13,7 @@ example
   .addEndpoint('smackTalk', {
     path: '/smacktalk',
     method: 'get',
+    open: true,
     handler: async () => ({
       talk: [
         'Yo mama!',
@@ -22,16 +23,12 @@ example
         'Hello! You smell.',
       ][Math.floor(Math.random() * 5)],
     }),
-    permissions: [
-      () => true,
-    ],
-    postHooks: [
-      ({ data }) => Object.assign(data, { attach: 'hello' }),
-    ],
   })
+  .addPostHook('smackTalk', ({ data }) => Object.assign(data, { attach: 'hello' }))
   .addEndpoint('niceTalk', {
     path: '/:nice/talk',
     method: 'get',
+    open: true,
     handler: async () => ({
       talk: [
         'You look nice today.',
@@ -41,17 +38,12 @@ example
         'Hello! You smell nice.',
       ][Math.floor(Math.random() * 5)],
     }),
-    permissions: [
-      () => true,
-    ],
   })
   .addEndpoint('orderSort', {
     path: '/order',
     method: 'get',
+    open: true,
     handler: () => ({ hello: true }),
-    permissions: [
-      () => true,
-    ],
   });
 
 /**
@@ -68,10 +60,13 @@ example
  */
 example
   .addPermission('find', () => true)
-  .addPermission('findOne', () => true)
-  .addPermission('create', () => true)
-  .addPermission('update', () => true)
-  .addPermission('remove', () => true);
+  .addPermission('count', () => true)
+  .addPermission('findOne', () => true);
+
+example.route('findById').addPermission(() => true);
+example.route('create').addPermission(() => true);
+example.route('update').addPermission(() => true);
+example.route('remove').addPermission(() => true);
 
 /**
  * Hooks
@@ -81,12 +76,15 @@ example
     if (context.messageOne !== 'Jack is awesome' || context.messageTwo !== 'Jack is cool') {
       throw new Error('This will not be called as my function is baller af.');
     }
-  })
-  .addPreHook('find', ({ context }) => {
+  });
+
+example.route('find')
+  .addPreHook(({ context }) => {
     Object.assign(context, { messageOne: 'Jack is awesome' });
   })
-  .addPreHook('find', ({ context }) => {
+  .addPreHook(({ context }) => {
     Object.assign(context, { messageTwo: 'Jack is cool' });
   });
+
 
 module.exports = example;

@@ -1,26 +1,34 @@
 const bcrypt = require('bcryptjs');
 const Resource = require('./resource');
-const { login, register, logout } = require('./utils/user');
+const { emailRegex } = require('./utils/helpers');
+const {
+  login,
+  register,
+  logout,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+} = require('./utils/user');
 
 class UserResource extends Resource {
 
   constructor(...args) {
     super(...args);
     this.auth = true;
-    const { secret } = args[0];
-    if (typeof secret !== 'string') {
-      throw new Error('Parameter "secret" must be given to the UserResource constructor as a string.');
-    }
-    this.secret = secret;
     this.schema.add({
       email: {
         type: String,
         required: true,
         unique: true,
+        validate: {
+          validator: email => emailRegex.test(email),
+          message: 'not a valid email format e.g. example@email.com',
+        },
       },
       password: {
         type: String,
         required: true,
+        select: false,
       },
     });
     this.schema.pre('save', function preSave(next) {
@@ -39,26 +47,46 @@ class UserResource extends Resource {
     this.schema.methods.comparePassword = function comparePassword(candidate) {
       return bcrypt.compare(candidate, this.password);
     };
+  }
+
+  /**
+   * Add the user endpoints.
+   */
+  addExtensions(options) {
     this.addEndpoint('login', {
       path: '/login',
       method: 'post',
-      handler: login(this.secret),
-      permissions: [() => true],
+      open: true,
+      handler: login(options),
     });
     this.addEndpoint('register', {
       path: '/register',
       method: 'post',
-      handler: register(this.secret),
-      permissions: [() => true],
+      open: true,
+      handler: register(options),
     });
     this.addEndpoint('logout', {
       path: '/logout',
       method: 'get',
-      handler: logout(),
-      permissions: [() => true],
+      open: true,
+      handler: logout(options),
+    });
+    this.addEndpoint('changePassword', {
+      path: '/password/change',
+      method: 'post',
+      handler: changePassword(options),
+    });
+    this.addEndpoint('forgotPassword', {
+      path: '/password/forgot',
+      method: 'post',
+      handler: forgotPassword(options),
+    });
+    this.addEndpoint('resetPassword', {
+      path: '/password/reset',
+      method: 'post',
+      handler: resetPassword(options),
     });
   }
 
 }
-
 module.exports = UserResource;

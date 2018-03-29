@@ -1,6 +1,6 @@
 {
   "name": "hobson",
-  "version": "0.3.2",
+  "version": "0.7.5",
   "description": "Lightweight, minimalistic approach to fully functioning RESTful endpoints in express",
   "main": "lib/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "npm run build && NODE_ENV=test mocha --exit",
     "test:watch": "npm run build && NODE_ENV=test mocha --watch",
     "release": "np",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "dev": "nodemon --exec \"npm run build && node use/index.js\" --watch src --watch use --delay 1"
   },
   "repository": {
@@ -60,7 +60,7 @@
     "http-status": "^1.0.1",
     "jsonwebtoken": "^8.1.1",
     "method-override": "^2.3.10",
-    "mongoose": "^5.0.6",
+    "mongoose": "^5.0.12",
     "morgan": "^1.9.0",
     "pluralize": "^7.0.0"
   }

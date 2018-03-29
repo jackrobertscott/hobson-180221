@@ -1,17 +1,29 @@
 const { camelCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const { checkString, checkObjectId, checkExists } = require('./helpers');
+const HTTPStatus = require('http-status');
+const { checkString, checkObjectId } = require('./helpers');
+const { ResponseError } = require('./errors');
 
 /**
  * Find many items in the database.
  *
  * @param {string} name the resource name
  */
-function find(name) {
+function find(name, { safe } = {}) {
   checkString(name, { method: camelCase(`find${name}`) });
-  return async ({ query: { filter }, model }) => {
-    const value = await model.find(filter || {});
-    checkExists(value);
+  return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
+    let options = {};
+    if (safe) options = { deleted: false };
+    const query = Model.find(Object.assign(options, filter || {}));
+    if (include) query.populate(include);
+    if (sort) query.sort(sort);
+    if (select) query.select(select);
+    if (skip) query.skip(Number(skip));
+    if (limit) query.limit(Number(limit));
+    const value = await query.exec();
+    if (!value) {
+      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
+    }
     return {
       [plural(name)]: value,
     };
@@ -20,17 +32,46 @@ function find(name) {
 module.exports.find = find;
 
 /**
- * Find one item in the database by it's id.
+ * Count the number of items in the database.
  *
  * @param {string} name the resource name
  */
-function findOne(name) {
+function count(name, { safe } = {}) {
+  checkString(name, { method: camelCase(`count${name}`) });
+  return async ({ query: { filter }, Model }) => {
+    let options = {};
+    if (safe) options = { deleted: false };
+    const value = await Model.count(Object.assign(options, filter || {}));
+    if (typeof value !== 'number') {
+      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
+    }
+    return {
+      count: value,
+    };
+  };
+}
+module.exports.count = count;
+
+/**
+ * Find one item in the database.
+ *
+ * @param {string} name the resource name
+ */
+function findOne(name, { safe } = {}) {
   checkString(name, { method: camelCase(`findOne${name}`) });
-  return async ({ params, model }) => {
-    const id = params[`${name}Id`];
-    checkObjectId(id);
-    const value = await model.findById(id);
-    checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
+  return async ({ Model, query: { filter, include, select } }) => {
+    let options = {};
+    if (safe) options = { deleted: false };
+    const query = Model.findOne(Object.assign(options, filter || {}));
+    if (include) query.populate(include);
+    if (select) query.select(select);
+    const value = await query.exec();
+    if (!value) {
+      throw new ResponseError({
+        message: `Model ${name} did not have an item with the given parameters.`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
     return {
       [singular(name)]: value,
     };
@@ -39,15 +80,44 @@ function findOne(name) {
 module.exports.findOne = findOne;
 
 /**
+ * Find one item in the database by it's id.
+ *
+ * @param {string} name the resource name
+ */
+function findById(name) {
+  checkString(name, { method: camelCase(`findById${name}`) });
+  return async ({ params, Model, query: { include, select } }) => {
+    const id = params[`${name}Id`];
+    checkObjectId(id);
+    const query = Model.findById(id);
+    if (include) query.populate(include);
+    if (select) query.select(select);
+    const value = await query.exec();
+    if (!value) {
+      throw new ResponseError({
+        message: `Model ${name} did not have an item with the id "${id}".`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
+    return {
+      [singular(name)]: value,
+    };
+  };
+}
+module.exports.findById = findById;
+
+/**
  * Create a resource item in the database.
  *
  * @param {string} name the resource name
  */
 function create(name) {
   checkString(name, { method: camelCase(`create${name}`) });
-  return async ({ body, model }) => {
-    const value = await model.create(body);
-    checkExists(value, { message: `There was an error creating an item for ${name}.` });
+  return async ({ body, Model }) => {
+    const value = await Model.create(body);
+    if (!value) {
+      throw new ResponseError({ message: `Error occurred creating an item for "${name}" model.` });
+    }
     return {
       [singular(name)]: value,
     };
@@ -62,11 +132,16 @@ module.exports.create = create;
  */
 function update(name) {
   checkString(name, { method: camelCase(`update${name}`) });
-  return async ({ params, body, model }) => {
+  return async ({ params, body, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    const value = await model.findById(id);
-    checkExists(value, { message: `Model ${name} did not have an item with the id "${id}".` });
+    const value = await Model.findById(id);
+    if (!value) {
+      throw new ResponseError({
+        message: `Model ${name} did not have an item with the id "${id}".`,
+        code: HTTPStatus.NOT_FOUND,
+      });
+    }
     await Object.assign(value, body).save();
     return {
       [singular(name)]: value,
@@ -80,12 +155,25 @@ module.exports.update = update;
  *
  * @param {string} name the resource name
  */
-function remove(name) {
+function remove(name, { safe, timestamps } = {}) {
   checkString(name, { method: camelCase(`remove${name}`) });
-  return async ({ params, model }) => {
+  return async ({ params, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
-    await model.findByIdAndRemove(id);
+    if (safe) {
+      const value = await Model.findById(id);
+      if (!value) {
+        throw new ResponseError({
+          message: `Model ${name} did not have an item with the id "${id}".`,
+          code: HTTPStatus.NOT_FOUND,
+        });
+      }
+      const body = { deleted: true };
+      if (timestamps) body.deletedAt = new Date();
+      await Object.assign(value, body).save();
+    } else {
+      await Model.findByIdAndRemove(id);
+    }
     return {
       [singular(name)]: null,
     };
