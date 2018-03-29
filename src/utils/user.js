@@ -41,10 +41,11 @@ function login({ Token, secret } = {}) {
       });
     }
     const auth = await createToken({ Token, user, secret });
+    const { payload = {} } = auth;
     return {
       auth: {
         token: auth.token,
-        ...auth.payload,
+        ...payload,
       },
     };
   };
@@ -72,11 +73,12 @@ function register({ Token, secret } = {}) {
       throw new ResponseError({ message: 'Error occurred while creating user.' });
     }
     const auth = await createToken({ Token, user, secret });
+    const { payload = {} } = auth;
     return {
       user,
       auth: {
         token: auth.token,
-        ...auth.payload,
+        ...payload,
       },
     };
   };
