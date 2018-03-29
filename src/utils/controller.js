@@ -9,13 +9,12 @@ const { ResponseError } = require('./errors');
  *
  * @param {string} name the resource name
  */
-function find(name, { safe }) {
+function find(name, { safe } = {}) {
   checkString(name, { method: camelCase(`find${name}`) });
   return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
-    const query = Model.find();
     let options = {};
     if (safe) options = { deleted: false };
-    query.where(Object.assign(options, filter || {}));
+    const query = Model.find(Object.assign(options, filter || {}));
     if (include) query.populate(include);
     if (sort) query.sort(sort);
     if (select) query.select(select);
@@ -37,14 +36,12 @@ module.exports.find = find;
  *
  * @param {string} name the resource name
  */
-function count(name, { safe }) {
+function count(name, { safe } = {}) {
   checkString(name, { method: camelCase(`count${name}`) });
   return async ({ query: { filter }, Model }) => {
-    const query = Model.count();
     let options = {};
     if (safe) options = { deleted: false };
-    query.where(Object.assign(options, filter || {}));
-    const value = await query.exec();
+    const value = await Model.count(Object.assign(options, filter || {}));
     if (typeof value !== 'number') {
       throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
@@ -60,13 +57,12 @@ module.exports.count = count;
  *
  * @param {string} name the resource name
  */
-function findOne(name, { safe }) {
+function findOne(name, { safe } = {}) {
   checkString(name, { method: camelCase(`findOne${name}`) });
   return async ({ Model, query: { filter, include, select } }) => {
-    const query = Model.findOne();
     let options = {};
     if (safe) options = { deleted: false };
-    query.where(Object.assign(options, filter || {}));
+    const query = Model.findOne(Object.assign(options, filter || {}));
     if (include) query.populate(include);
     if (select) query.select(select);
     const value = await query.exec();
@@ -159,7 +155,7 @@ module.exports.update = update;
  *
  * @param {string} name the resource name
  */
-function remove(name, { safe, timestamps }) {
+function remove(name, { safe, timestamps } = {}) {
   checkString(name, { method: camelCase(`remove${name}`) });
   return async ({ params, Model }) => {
     const id = params[`${name}Id`];
