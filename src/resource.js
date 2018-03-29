@@ -73,25 +73,6 @@ class Resource {
     if (address && typeof address !== 'string') {
       throw new Error('Parameter "address" must be given to the Resource constructor as a string.');
     }
-    if (timestamps) {
-      schema.set('timestamps', true);
-    }
-    if (safe) {
-      schema.add({
-        deleted: {
-          type: Boolean,
-          required: true,
-          default: false,
-        },
-      });
-      if (timestamps) {
-        schema.add({
-          deletedAt: {
-            type: Date,
-          },
-        });
-      }
-    }
     this.setup = false;
     this.unsecure = unsecure;
     this.resourceName = camelCase(singular(name));
@@ -108,6 +89,25 @@ class Resource {
     this.preHooks = new Map();
     this.postHooks = new Map();
     this.permissions = new Map();
+    if (safe) {
+      this.schema.add({
+        deleted: {
+          type: Boolean,
+          required: true,
+          default: false,
+        },
+      });
+      if (timestamps) {
+        this.schema.add({
+          deletedAt: {
+            type: Date,
+          },
+        });
+      }
+    }
+    if (timestamps) {
+      this.schema.set('timestamps', true);
+    }
   }
 
   /**
