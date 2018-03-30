@@ -4,21 +4,18 @@
 ///<reference types="node" />
 
 import { Mongoose } from 'mongoose';
+import { Secret } from 'jsonwebtoken';
 
 declare namespace hobson {
   interface Resource {
     /**
+     * 
+     */
+    static formatEndpoint(endpoint: any[]): any[];
+    /**
      * Resource constructor
      */
-    ({
-      name: string,
-      schema: any,
-      address: string,
-      disable: array,
-      unsecure: boolean,
-      timestamps: boolean,
-      safe: boolean,
-    }): Resource;
+    (args: any): Resource;
 
     /**
      * 
@@ -38,7 +35,7 @@ declare namespace hobson {
     /**
      * 
      */
-    addEndpoint(id: string, endpoint: object): Resource;
+    addEndpoint(id: string, endpoint: any): Resource;
 
     /**
      * 
@@ -70,19 +67,56 @@ declare namespace hobson {
      */
     attach(app: Express): void;
   }
-  interface UserResource {
+  
+  interface UserResource extends Resource {
+    /**
+     * 
+     */
+    (args: any): UserResource;
 
+    /**
+     * 
+     */
+    addExtensions(options: any): void;
   }
-  interface TokenResource {
 
-  }
-  interface ResponseError {
+  interface TokenResource extends Resource {
+    /**
+     * 
+     */
+    static generate(secret: Secret, payload: string | Object | Buffer, options: any): string;
 
+    /**
+     * 
+     */
+    (args: any): TokenResource;
   }
-  interface connect {
 
+  interface ResponseError extends Error {
+    (error: any): ResponseError;
   }
+
+  function connect (args: any): void;
+  
   interface access {
-    
+    /**
+     * 
+     */
+    isAnyone(): boolean;
+
+    /**
+     * 
+     */
+    isTokenized(): boolean;
+
+    /**
+     * 
+     */
+    isUser(): boolean;
+
+    /**
+     * 
+     */
+    isOwner(args: any) :boolean;
   }
 }
