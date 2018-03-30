@@ -5,9 +5,42 @@
 
 import { Mongoose } from 'mongoose';
 import { Secret } from 'jsonwebtoken';
+import { Express } from 'express';
+
+declare class Route {
+  /**
+   * 
+   */
+  constructor();
+
+  /**
+   * 
+   */
+  addEndpoint(endpoint: any): Route;
+
+  /**
+   * 
+   */
+  addMiddleware(middleware: function): Route;
+
+  /**
+   * 
+   */
+  addPreHook(hook: function): Route;
+
+  /**
+   * 
+   */
+  addPostHook(hook: function): Route;
+
+  /**
+   * 
+   */
+  addPermission(permission: function): Route;
+}
 
 declare namespace hobson {
-  interface Resource {
+  export class Resource {
     /**
      * 
      */
@@ -15,17 +48,17 @@ declare namespace hobson {
     /**
      * Resource constructor
      */
-    (args: any): Resource;
+    constructor(args: any);
 
     /**
      * 
      */
-    defaults(): Map;
+    defaults(): Map<string, any>;
 
     /**
      * 
      */
-    model(): Mongoose.model;
+    model(): Mongoose['model'];
 
     /**
      * 
@@ -68,11 +101,11 @@ declare namespace hobson {
     attach(app: Express): void;
   }
   
-  interface UserResource extends Resource {
+  export class UserResource extends Resource {
     /**
      * 
      */
-    (args: any): UserResource;
+    constructor(args: any);
 
     /**
      * 
@@ -80,43 +113,43 @@ declare namespace hobson {
     addExtensions(options: any): void;
   }
 
-  interface TokenResource extends Resource {
+  export class TokenResource extends Resource {
     /**
      * 
      */
-    static generate(secret: Secret, payload: string | Object | Buffer, options: any): string;
+    static generate(secret: Secret, payload: string, options: any): string;
 
     /**
      * 
      */
-    (args: any): TokenResource;
+    constructor(args: any);
   }
 
-  interface ResponseError extends Error {
-    (error: any): ResponseError;
+  export class ResponseError extends Error {
+    constructor(error: any);
   }
 
-  function connect (args: any): void;
+  export function connect (args: any): void;
   
-  interface access {
+  export namespace access {
     /**
      * 
      */
-    isAnyone(): boolean;
+    function isAnyone(): boolean;
 
     /**
      * 
      */
-    isTokenized(): boolean;
+    function isTokenized(): boolean;
 
     /**
      * 
      */
-    isUser(): boolean;
+    function isUser(): boolean;
 
     /**
      * 
      */
-    isOwner(args: any) :boolean;
+    function isOwner(args: any) :boolean;
   }
 }
