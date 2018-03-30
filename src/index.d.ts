@@ -1,8 +1,6 @@
 // Type definitions for hobson 0.7.5
 // Project: https://github.com/jackrobertscott/hobson
 
-///<reference types="node" />
-
 import { Mongoose } from 'mongoose';
 import { Secret } from 'jsonwebtoken';
 import { Express } from 'express';
@@ -21,135 +19,133 @@ declare class Route {
   /**
    * 
    */
-  addMiddleware(middleware: function): Route;
+  addMiddleware(middleware: () => void): Route;
 
   /**
    * 
    */
-  addPreHook(hook: function): Route;
+  addPreHook(hook: () => void): Route;
 
   /**
    * 
    */
-  addPostHook(hook: function): Route;
+  addPostHook(hook: () => void): Route;
 
   /**
    * 
    */
-  addPermission(permission: function): Route;
+  addPermission(permission: () => boolean): Route;
 }
 
-declare namespace hobson {
-  export class Resource {
-    /**
-     * 
-     */
-    static formatEndpoint(endpoint: any[]): any[];
-    /**
-     * Resource constructor
-     */
-    constructor(args: any);
+export declare class Resource {
+  /**
+   * 
+   */
+  static formatEndpoint(endpoint: any[]): any[];
+  /**
+   * Resource constructor
+   */
+  constructor(args: any);
 
-    /**
-     * 
-     */
-    defaults(): Map<string, any>;
+  /**
+   * 
+   */
+  defaults(): Map<string, any>;
 
-    /**
-     * 
-     */
-    model(): Mongoose['model'];
+  /**
+   * 
+   */
+  model(): Mongoose['model'];
 
-    /**
-     * 
-     */
-    route(id: string): Route;
+  /**
+   * 
+   */
+  route(id: string): Route;
 
-    /**
-     * 
-     */
-    addEndpoint(id: string, endpoint: any): Resource;
+  /**
+   * 
+   */
+  addEndpoint(id: string, endpoint: any): Resource;
 
-    /**
-     * 
-     */
-    addMiddleware(id: string, middleware: function): Resource;
+  /**
+   * 
+   */
+  addMiddleware(id: string, middleware: () => void): Resource;
 
-    /**
-     * 
-     */
-    addPreHook(id: string, hook: function): Resource;
+  /**
+   * 
+   */
+  addPreHook(id: string, hook: () => void): Resource;
 
-    /**
-     * 
-     */
-    addPostHook(id: string, hook: function): Resource;
+  /**
+   * 
+   */
+  addPostHook(id: string, hook: () => void): Resource;
 
-    /**
-     * 
-     */
-    addPermission(id: string, permission: function): Resource;
+  /**
+   * 
+   */
+  addPermission(id: string, permission: () => boolean): Resource;
 
-    /**
-     * 
-     */
-    compile(): void;
+  /**
+   * 
+   */
+  compile(): void;
 
-    /**
-     * 
-     */
-    attach(app: Express): void;
-  }
-  
-  export class UserResource extends Resource {
-    /**
-     * 
-     */
-    constructor(args: any);
+  /**
+   * 
+   */
+  attach(app: Express): void;
+}
 
-    /**
-     * 
-     */
-    addExtensions(options: any): void;
-  }
+export declare class UserResource extends Resource {
+  /**
+   * 
+   */
+  constructor(args: any);
 
-  export class TokenResource extends Resource {
-    /**
-     * 
-     */
-    static generate(secret: Secret, payload: string, options: any): string;
+  /**
+   * 
+   */
+  addExtensions(options: any): void;
+}
 
-    /**
-     * 
-     */
-    constructor(args: any);
-  }
+export declare class TokenResource extends Resource {
+  /**
+   * 
+   */
+  static generate(secret: Secret, payload: string, options: any): string;
 
-  export class ResponseError extends Error {
-    constructor(error: any);
-  }
+  /**
+   * 
+   */
+  constructor(args: any);
+}
 
-  export function connect (args: any): void;
-  
-  export namespace access {
-    /**
-     * 
-     */
-    function isAnyone(): boolean;
+export declare class ResponseError extends Error {
+  constructor(error: any);
+}
 
-    /**
-     * 
-     */
-    function isTokenized(): boolean;
+export declare function connect (args: any): void;
 
-    /**
-     * 
-     */
-    function isUser(): boolean;
+export declare namespace access {
+  /**
+   * 
+   */
+  function isAnyone(): boolean;
 
-    /**
-     * 
-     */
-    function isOwner(args: any) :boolean;
-  }
+  /**
+   * 
+   */
+  function isTokenized(): boolean;
+
+  /**
+   * 
+   */
+  function isUser(): boolean;
+
+  /**
+   * 
+   */
+  function isOwner(args: any) :boolean;
 }
