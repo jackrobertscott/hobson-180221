@@ -49,5 +49,5 @@ export declare namespace access {
   function isAnyone(): boolean;
   function isTokenized(): boolean;
   function isUser(): boolean;
-  function isOwner(args: any) :boolean;
+  function isOwner(args: any): boolean;
 }
