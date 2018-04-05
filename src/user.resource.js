@@ -20,6 +20,7 @@ class UserResource extends Resource {
         type: String,
         required: true,
         unique: true,
+        trim: true,
         validate: {
           validator: email => emailRegex.test(email),
           message: 'not a valid email format e.g. example@email.com',
