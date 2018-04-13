@@ -2,7 +2,7 @@ const express = require('express');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
 const { formatResponse } = require('./utils/helpers');
-const errors = require('./errors');
+const { ResponseError } = require('./utils/errors');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
 const TokenResource = require('./token.resource');
 
@@ -22,7 +22,7 @@ function parseRequest(app, parse) {
 function catchErrors(app, debug) {
   return app
     .use((req, res, next) => {
-      const error = new errors.Response({
+      const error = new ResponseError({
         message: 'Request address does not exist on the api.',
         code: HTTPStatus.NOT_FOUND,
       });
@@ -65,13 +65,13 @@ function connect({
   token = 'Token',
 }) {
   if (typeof app !== 'function' || typeof app.use !== 'function') {
-    throw new errors.Response({ message: 'Parameter "app" must be an express app instance.' });
+    throw new Error('Parameter "app" must be an express app instance.');
   }
   if (!resources || !Array.isArray(resources)) {
-    throw new errors.Response({ message: 'Parameter "resources" must be an array of resources.' });
+    throw new Error('Parameter "resources" must be an array of resources.');
   }
   if (typeof secret !== 'string') {
-    throw new errors.Response({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
+    throw new Error('Parameter "secret" must be a random string used to authenticate requests.');
   }
   parseRequest(app, parse);
   const tokenResource = resources.find(resource => resource.token) || new TokenResource({

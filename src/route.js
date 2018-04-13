@@ -1,68 +1,83 @@
-const { checkString } = require('./utils/helpers');
+const { expect } = require('./utils/helpers');
 
 class Route {
 
   /**
-   * Create a helper route for working with a resource.
+   * Routes are used as endpoints for an API.
+   *
+   * @param {string} id the id of the route used in referencing it.
+   * @param {string} path the (sub) path of the route.
+   * @param {string} method the method (e.g. get, post, put) of the route.
+   * @param {function} handler the main function of the route.
+   * @param {boolean} open set this route as unprotected by default (not recommended).
    */
-  constructor({ id, resource }) {
-    checkString(id, { message: 'Expected "id" parameter to be a string.' });
-    if (typeof resource !== 'object') {
-      throw new Error('Expected "resource" parameter to be a Resource instance.');
-    }
+  constructor({
+    id,
+    path,
+    method,
+    handler,
+    open = false,
+  } = {}) {
+    expect({ name: 'id', value: id, type: 'string' });
+    expect({ name: 'path', value: path, type: 'string' });
+    expect({ name: 'method', value: method, type: 'string' });
+    expect({ name: 'handler', value: handler, type: 'function' });
+    expect({ name: 'open', value: open, type: 'boolean' });
     this.id = id;
-    this.resource = resource;
+    this.path = path;
+    this.method = method;
+    this.handler = handler;
+    this.open = open;
+    this.middlewares = [];
+    this.permissions = [];
+    this.befores = [];
+    this.afters = [];
   }
 
   /**
-   * Add activation middleware to an endpoint.
+   * Add a middleware to the route.
    *
-   * @param {object} endpoint the endpoint data
+   * @param {function} middleware an express middleware function.
    */
-  addEndpoint(endpoint) {
-    this.resource.addEndpoint(this.id, endpoint);
+  middleware(middleware) {
+    expect({ name: 'middleware', value: middleware, type: 'function' });
+    this.middlewares.push(middleware);
     return this;
   }
 
   /**
-   * Add activation middleware to an endpoint.
+   * Add a permission to the route.
    *
-   * @param {function} middleware the middleware function
+   * @param {function} permission a function (or async function) which resolved to true if allowed.
    */
-  addMiddleware(middleware) {
-    this.resource.addMiddleware(this.id, middleware);
+  permission(permission) {
+    expect({ name: 'permission', value: permission, type: 'function' });
+    this.permissions.push(permission);
     return this;
   }
 
   /**
-   * Add a hook to an endpoint function.
+   * Add a before hook to the route.
    *
-   * @param {function} hook a function to run
+   * @param {function} before a function (or async function) which is run before the route handler.
    */
-  addPreHook(hook) {
-    this.resource.addPreHook(this.id, hook);
+  before(before) {
+    expect({ name: 'before', value: before, type: 'function' });
+    this.befores.push(before);
     return this;
   }
 
   /**
-   * Add a hook to an endpoint function.
+   * Add a after hook to the route.
    *
-   * @param {function} hook a function to run
+   * @param {function} after a function (or async function) which is run after the route handler.
    */
-  addPostHook(hook) {
-    this.resource.addPostHook(this.id, hook);
-    return this;
-  }
-
-  /**
-   * Add a permission function to allow access to an endpoint.
-   *
-   * @param {function} permission a function to run and should return a truth
-   */
-  addPermission(permission) {
-    this.resource.addPermission(this.id, permission);
+  after(after) {
+    expect({ name: 'after', value: after, type: 'function' });
+    this.afters.push(after);
     return this;
   }
 
 }
-module.exports = Route;
+
+module.exports = (...args) => new Route(...args);

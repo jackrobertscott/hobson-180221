@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 const HTTPStatus = require('http-status');
-const errors = require('../errors');
+const { ResponseError } = require('./errors');
 
 /**
  * Generate an authentication token which can be sent to the client to
  * verify future requests.
  */
-module.exports.generateToken = function generateToken(payload, secret, options = {}) {
+function generateToken(payload, secret, options = {}) {
   const data = Object.assign({
     expiresIn: '30d',
   }, options);
@@ -14,20 +14,21 @@ module.exports.generateToken = function generateToken(payload, secret, options =
     ...data,
     token: jwt.sign(payload, secret, data),
   };
-};
+}
+module.exports.generateToken = generateToken;
 
 /**
  * Decode a jwt token.
  */
-module.exports.decodeToken = function decodeToken(token, secret) {
+function decodeToken(token, secret) {
   return jwt.verify(token, secret);
-};
+}
+module.exports.decodeToken = decodeToken;
 
 /**
  * Package the authentication.
  */
-module.exports.authPackage = function authPackage(payload, secret, options) {
-  const { generateToken, decodeToken } = module.exports;
+function authPackage(payload, secret, options) {
   const { token } = generateToken(payload, secret, options);
   const { iat, exp } = decodeToken(token, secret);
   return {
@@ -36,13 +37,13 @@ module.exports.authPackage = function authPackage(payload, secret, options) {
     expires: exp,
     iat,
   };
-};
+}
+module.exports.authPackage = authPackage;
 
 /**
  * Populate a token found on the request.
  */
-module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
-  const { decodeToken } = module.exports;
+function tokenPopulate({ Model, secret }) {
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
       next();
@@ -55,7 +56,7 @@ module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
         if (issue.active) {
           Object.assign(req, { auth: issue });
         } else {
-          throw new errors.Response({
+          throw new ResponseError({
             message: 'Token is not active. Please reauthenticate.',
             code: HTTPStatus.UNAUTHORIZED,
           });
@@ -64,12 +65,13 @@ module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
       })
       .catch(next);
   };
-};
+}
+module.exports.tokenPopulate = tokenPopulate;
 
 /**
  * Populate authentication on request if auth found.
  */
-module.exports.authPopulate = function authPopulate({ Model }) {
+function authPopulate({ Model }) {
   return (req, res, next) => {
     if (!req.auth) {
       next();
@@ -86,4 +88,5 @@ module.exports.authPopulate = function authPopulate({ Model }) {
       next();
     }
   };
-};
+}
+module.exports.authPopulate = authPopulate;

@@ -1,27 +1,32 @@
 /**
  * Access to anyone.
  */
-module.exports.isAnyone = function isAnyone() {
+function isAnyone() {
   return () => true;
-};
+}
+module.exports.isAnyone = isAnyone;
 
 /**
  * Authenticate from an access token.
  */
-module.exports.isTokenized = function isTokenized() {
+function isTokenized() {
   return ({ req }) => req.auth && req.auth.id;
-};
+}
+module.exports.isTokenized = isTokenized;
 
 /**
  * Authenticate a user.
  */
-module.exports.isUser = function isUser() {
+function isUser() {
   return ({ req }) => req.user;
-};
+}
+module.exports.isUser = isUser;
+
 
 /**
- * Authenticate an owner of a resource.
+ * Authenticate a user.
  */
-module.exports.isOwner = function isOwner({ field = 'user' } = {}) {
+function isOwner({ field = 'user' } = {}) {
   return ({ body, user }) => user && body && body[field] === user.id;
-};
+}
+module.exports.isOwner = isOwner;
