@@ -29,17 +29,18 @@ class Resource {
    * @param {string} model the model as created by hobson.
    */
   constructor({
+    model,
     name,
     address,
-    model,
     options = {},
   } = {}) {
-    expect({ name: 'name', value: name, type: 'string' });
-    expect({ name: 'address', value: name, type: 'string', optional: true });
     expect({ name: 'model', value: model, type: 'object' });
+    expect({ name: 'name', value: name, type: 'string', optional: true });
+    expect({ name: 'address', value: name, type: 'string', optional: true });
     expect({ name: 'options', value: options, type: 'object' });
-    this.name = camelCase(singular(name));
-    this.address = address || `/${camelCase(plural(name))}`;
+    const nickname = name || model.modelName;
+    this.name = camelCase(singular(nickname));
+    this.address = address || `/${camelCase(plural(nickname))}`;
     this.model = model;
     this.options = options;
     this.routes = new Map();

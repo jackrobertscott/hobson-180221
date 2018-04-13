@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/jackrobertscott/hobson.svg?branch=master)](https://travis-ci.org/jackrobertscott/hobson) [![npm version](https://badge.fury.io/js/hobson.svg)](https://badge.fury.io/js/hobson) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Get up and running with a fully functioning CRUD API, with minimum configuration. Simply create and add your schema to a hobson resource. Then attach it to your express app, and your good to go!
+Get up and running with a fully functioning CRUD API, with minimum configuration. Get all the functionality of a fully loaded framework with only the smallest amount of configuration.
 
 ## Features
 
@@ -19,61 +19,100 @@ RESTful endpoint features:
 
 ## Install
 
-Get started by installing hobson (and mongoose, if you haven't already).
+Get started by installing hobson.
 
 ```sh
-npm install --save hobson mongoose
+npm install --save hobson
 ```
 
-The [mongoose](https://github.com/Automattic/mongoose) schema lib is required as it gives us awesome schema validation features.
-
-**Note:** other options may be supported in the future.
+Hobson uses [mongoose](https://github.com/Automattic/mongoose) under the hood as it gives us awesome schema validation features.
 
 ## Usage
 
 Hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
 
-**Step 1.** Create your mongoose schema
+**Step 1.** Create a schema
+
+File: `unicorn.schema.js`
 
 ```js
-const mongoose = require('mongoose');
+const { Schema } = require('hobson');
 
-const unicornSchema = new mongoose.Schema({
-  owner: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User', // same as userResource.name
-    required: true,
+const unicornSchema = Schema({
+  shape: {
+    owner: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User', // same as userResource.name
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
   },
-  name: {
-    type: String,
-    required: true,
+  options: {
+    timestamps: false,
   },
 });
 
-// custom mongoose functions, virtual properties, and more...
+// unicornSchema is a mongoose schema which means you can create virtuals, methods, etc. on it.
 
 module.exports = unicornSchema;
 ```
 
-**Step 2.** Create the hobson resource.
+**Step 2.** Create a model from the schema
+
+File: `unicorn.model.js`
 
 ```js
-const { Resource, connect } = require('hobson');
-const unicornSchema = require('./unicornSchema');
+const { create } = require('hobson');
+const unicornSchema = require('./unicorn.schema.js');
 
-const unicornResource = new Resource({
+const Unicorn = create({
   name: 'Unicorn',
   schema: unicornSchema,
-  address: '/unicorns', // optional: default is "/unicorns"
-  timestamps: true, // optional: default is true
 });
 
-// other cool things...
-
-module.exports = unicornSchema;
+module.exports = Unicorn;
 ```
 
-**Step 3.** Attach your resources to your express app.
+**Step 3.** Create a resource
+
+File: `unicorn.resource.js`
+
+```js
+const { Resource } = require('hobson');
+const Unicorn = require('./unicorn.model.js');
+
+const unicornResource = new Resource({ model: Unicorn });
+
+// extra routes go here...
+
+module.exports = unicornResource;
+```
+
+**Step 4.** Create additional routes
+
+File: `unicorn.resource.js`
+
+```js
+const { Route, Resource } = require('hobson');
+
+// ...
+
+const findGreenUnicons = new Route({
+  id: 'findGreenUnicons',
+  path: '/green',
+  methods: 'get',
+  handler: async () => console.log('do things here'),
+});
+
+unicornResource.add(findGreenUnicorns);
+
+module.exports = unicornResource;
+```
+
+**Step 5.** Connect hobson to express
 
 ```js
 const app = express();
@@ -110,21 +149,15 @@ The hobson resource creates endpoints for you like you would on a regular RESTfu
 Here is how you add custom endpoints to the resource.
 
 ```js
-unicornResource.addEndpoint('talkSmack', {
-  path: '/talk/smack',
-  method: 'get',
-  handler: () => 'Yo mama!',
+const findGreenUnicons = new Route({
+  id: 'findGreenUnicons',
+  path: '/green',
+  methods: 'get',
+  handler: async () => console.log('do things here'),
 });
-```
 
-You can also disable any, unwanted, default endpoints when you define the resource.
 
-```js
-const unicornResource = new Resource({
-  name: 'Unicorn',
-  schema: unicornSchema,
-  disable: ['find', 'remove'], // disabled
-});
+unicornResource.add(findGreenUnicorns);
 ```
 
 ### Authentication
@@ -132,11 +165,8 @@ const unicornResource = new Resource({
 Routes are **protected by default**. Provide permission functions to give access to your users.
 
 ```js
-unicornResource
-  .addPermission('find', ({ user }) => {
-    return true; // access given to everyone
-  })
-  .addPermission('talkSmack', ({ user }) => {
+unicornResource.route('findGreenUnicorns')
+  .permission(({ user }) => {
     return user.role === ROLE_ADMIN; // access given to only admins
   });
 ```
@@ -146,39 +176,24 @@ unicornResource
 Provide hooks to your endpoints which will run before and after the main handler. There is also a helpful `context` object which you can use to assign data to access throughout your function chain.
 
 ```js
-unicornResource
-  .addPreHook('talkSmack', ({ context }) => {
+unicornResource.route('findGreenUnicorns')
+  .before(({ context }) => {
     context.appendMessage = 'Hi Fred,';
   })
-  .addPostHook('talkSmack', ({ data, context }) => {
+  .after(({ data, context }) => {
     console.log(context.appendMessage, data); // Hi Fred, Yo mama!
-  })
+  });
 ```
 
 You can also use old express middleware too. When added, these will run before all the other functions.
 
 ```js
-unicornResource.addMiddleware('talkSmack', (req, res, next) => {
-  req.example = 'Make sure your old middleware functions call next()';
-  next();
-});
+unicornResource.route('findGreenUnicorns')
+  .middleware((req, res, next) => {
+    req.example = 'Hello there!';
+    next(); // important: make sure to call next
+  });
 ```
-
-### Routes
-
-To make it easier to add functionality to a specific route, we have added a helpful function called `route`. This allows you to chain functionality to a single id.
-
-```js
-unicornResource.route('talkSmack')
-  .addPreHook(({ context }) => {
-    context.appendMessage = 'Hi Fred,';
-  })
-  .addPostHook(({ data, context }) => {
-    console.log(context.appendMessage, data); // Hi Fred, Yo mama!
-  })
-```
-
-Observe how, when you use the `route` function, you no longer need to include the `id` field (in this case it's `talkSmack`).
 
 ## Response Standards
 
