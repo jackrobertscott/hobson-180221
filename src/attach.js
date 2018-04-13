@@ -3,17 +3,15 @@ const HTTPStatus = require('http-status');
 const { formatResponse } = require('./utils/helpers');
 const errors = require('./errors');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
-const model = require('./model');
+const create = require('./create');
 const schema = require('./schema');
 
 /**
  * Parse the body of the requests.
  */
-function parseRequest(app, parse) {
-  if (parse) {
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-  }
+function parseRequest(app) {
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 }
 
 /**
@@ -52,11 +50,8 @@ function environmentCheck(app) {
 
 /**
  * Connect resources to the express app.
- *
- * @param {Object} options.app the express app instance
- * @param {Array} options.resources the express app instance
  */
-function connect({
+module.exports = function attach({
   app,
   resources,
   secret,
@@ -73,8 +68,10 @@ function connect({
   if (typeof secret !== 'string') {
     throw new errors.Response({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
   }
-  parseRequest(app, parse);
-  const Token = model({
+  if (parse) {
+    parseRequest(app, parse);
+  }
+  const Token = create({
     name: token,
     schema: schema({ type: 'token' }),
   });
@@ -82,10 +79,9 @@ function connect({
   const userResource = resources.find(resource => resource.auth);
   if (userResource) {
     app.use(authPopulate({ User: userResource.model, secret }));
-    userResource.addExtensions({ Token, secret });
+    userResource.extensions({ Token, secret });
   }
   resources.forEach(resource => resource.attach(app));
   environmentCheck(app);
   catchErrors(app, debug);
-}
-module.exports = connect;
+};

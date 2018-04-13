@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { camelCase, lowerCase } = require('change-case');
 const { plural, singular } = require('pluralize');
-const route = require('./route');
+const Route = require('./route');
 const errors = require('./errors');
 const {
   expect,
@@ -20,7 +20,7 @@ const {
   remove,
 } = require('./utils/defaults');
 
-class Resource {
+module.exports = class Resource {
 
   /**
    * Routes are used as endpoints for an API.
@@ -102,9 +102,9 @@ class Resource {
   add(data) {
     expect({ name: 'data', value: data, type: 'object' });
     if (typeof data.permission === 'function' && typeof data.before === 'function' && typeof data.after === 'function') {
-      this.routes.set(route.id, data);
+      this.routes.set(data.id, data);
     } else {
-      this.routes.set(data.id, route(data));
+      this.routes.set(data.id, new Route(data));
     }
     return this;
   }
@@ -154,6 +154,4 @@ class Resource {
     throw new errors.Response({ message: `Expected "app" paramater to be an express app but got ${app}.` });
   }
 
-}
-
-module.exports = (...args) => new Resource(...args);
+};

@@ -1,9 +1,10 @@
 require('babel-polyfill');
 
-module.exports.connect = require('./connect');
-module.exports.schema = require('./schema');
-module.exports.model = require('./model');
-module.exports.route = require('./route');
-module.exports.resource = require('./resource');
+module.exports.Schema = require('./schema');
+module.exports.Route = require('./route');
+module.exports.Resource = require('./resource');
+
+module.exports.attach = require('./attach');
+module.exports.create = require('./create');
 module.exports.access = require('./access');
 module.exports.errors = require('./errors');

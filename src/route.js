@@ -1,6 +1,6 @@
 const { expect } = require('./utils/helpers');
 
-class Route {
+module.exports = class Route {
 
   /**
    * Routes are used as endpoints for an API.
@@ -78,6 +78,4 @@ class Route {
     return this;
   }
 
-}
-
-module.exports = (...args) => new Route(...args);
+};
