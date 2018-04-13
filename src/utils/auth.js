@@ -41,7 +41,7 @@ module.exports.authPackage = function authPackage(payload, secret, options) {
 /**
  * Populate a token found on the request.
  */
-module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
+module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
   const { decodeToken } = module.exports;
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
@@ -50,7 +50,7 @@ module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
     }
     const token = req.headers.authorization;
     const auth = decodeToken(token, secret);
-    Model.findById(auth.id)
+    Token.findById(auth.id)
       .then((issue) => {
         if (issue.active) {
           Object.assign(req, { auth: issue });
@@ -69,14 +69,14 @@ module.exports.tokenPopulate = function tokenPopulate({ Model, secret }) {
 /**
  * Populate authentication on request if auth found.
  */
-module.exports.authPopulate = function authPopulate({ Model }) {
+module.exports.authPopulate = function authPopulate({ User }) {
   return (req, res, next) => {
     if (!req.auth) {
       next();
       return;
     }
-    if (req.auth && Model) {
-      Model.findById(req.auth.payload.userId)
+    if (req.auth && User) {
+      User.findById(req.auth.payload.userId)
         .then((user) => {
           req.user = user;
           next();

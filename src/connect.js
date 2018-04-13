@@ -1,10 +1,10 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
-const mongoose = require('mongoose');
 const { formatResponse } = require('./utils/helpers');
 const errors = require('./errors');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
-const TokenResource = require('./token.resource');
+const model = require('./model');
+const schema = require('./schema');
 
 /**
  * Parse the body of the requests.
@@ -74,24 +74,15 @@ function connect({
     throw new errors.Response({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
   }
   parseRequest(app, parse);
-  const tokenResource = resources.find(resource => resource.token) || new TokenResource({
+  const Token = model({
     name: token,
-    schema: new mongoose.Schema({}),
+    schema: schema({ type: 'token' }),
   });
-  app.use(tokenPopulate({
-    Model: tokenResource.model,
-    secret,
-  }));
+  app.use(tokenPopulate({ Token, secret }));
   const userResource = resources.find(resource => resource.auth);
   if (userResource) {
-    app.use(authPopulate({
-      Model: userResource.model,
-      secret,
-    }));
-    userResource.addExtensions({
-      Token: tokenResource.model,
-      secret,
-    });
+    app.use(authPopulate({ User: userResource.model, secret }));
+    userResource.addExtensions({ Token, secret });
   }
   resources.forEach(resource => resource.attach(app));
   environmentCheck(app);
