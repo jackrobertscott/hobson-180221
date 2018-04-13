@@ -1,11 +1,11 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
 const errors = require('./errors');
+const create = require('./create');
+const TokenSchema = require('./token/schema');
 const { formatResponse } = require('./utils/helpers');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
 const UserResource = require('./user/resource');
-const create = require('./create');
-const schema = require('./schema');
 
 /**
  * Parse the body of the requests.
@@ -72,10 +72,7 @@ module.exports = function attach({
   if (parse) {
     parseRequest(app, parse);
   }
-  const Token = create({
-    name: token,
-    schema: schema({ type: 'token' }),
-  });
+  const Token = create({ name: token, schema: new TokenSchema() });
   app.use(tokenPopulate({ Token, secret }));
   const userResource = resources.find(resource => resource instanceof UserResource);
   if (userResource) {

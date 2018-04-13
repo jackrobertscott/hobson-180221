@@ -1,6 +1,5 @@
-const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
-const { expect, emailRegex } = require('./utils/helpers');
+const { expect } = require('./utils/helpers');
 
 module.exports = class Schema extends mongoose.Schema {
 
@@ -44,70 +43,6 @@ module.exports = class Schema extends mongoose.Schema {
       }
     }
     super(Object.assign(mixins, shape), configuration);
-    switch (type) {
-      case 'token':
-        this.add({
-          token: {
-            type: String,
-            required: true,
-          },
-          payload: {
-            type: mongoose.Schema.Types.Mixed,
-            required: true,
-          },
-          expires: {
-            type: Number,
-            required: true,
-          },
-          iat: {
-            type: Number,
-            required: true,
-          },
-          active: {
-            type: Boolean,
-            required: true,
-            default: true,
-          },
-        });
-        break;
-      case 'user':
-        this.add({
-          email: {
-            type: String,
-            required: true,
-            unique: true,
-            trim: true,
-            validate: {
-              validator: email => emailRegex.test(email),
-              message: 'not a valid email format e.g. example@email.com',
-            },
-          },
-          password: {
-            type: String,
-            required: true,
-            select: false,
-          },
-        });
-        this.pre('save', function preSave(next) {
-          if (!this.isModified('password')) {
-            next();
-          } else {
-            bcrypt.genSalt(5)
-              .then(salt => bcrypt.hash(this.password, salt))
-              .then((hash) => {
-                this.password = hash;
-                next();
-              })
-              .catch(next);
-          }
-        });
-        this.methods.comparePassword = function comparePassword(candidate) {
-          return bcrypt.compare(candidate, this.password);
-        };
-        break;
-      default:
-        break;
-    }
   }
 
 };
