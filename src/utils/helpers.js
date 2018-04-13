@@ -18,15 +18,6 @@ module.exports.expect = function expect({ name, value, type = 'string', optional
 };
 
 /**
- * Check that the resource is compiled before proceeding.
- */
-module.exports.checkCompile = function checkCompile(compile) {
-  if (compile) {
-    throw new errors.Response({ message: 'Resource can not be change once it has been compiled.' });
-  }
-};
-
-/**
  * Check if the id of an item is a valid.
  */
 module.exports.checkObjectId = function checkObjectId(id) {

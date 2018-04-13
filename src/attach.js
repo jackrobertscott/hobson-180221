@@ -1,8 +1,9 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
-const { formatResponse } = require('./utils/helpers');
 const errors = require('./errors');
+const { formatResponse } = require('./utils/helpers');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
+const UserResource = require('./user/resource');
 const create = require('./create');
 const schema = require('./schema');
 
@@ -76,7 +77,7 @@ module.exports = function attach({
     schema: schema({ type: 'token' }),
   });
   app.use(tokenPopulate({ Token, secret }));
-  const userResource = resources.find(resource => resource.auth);
+  const userResource = resources.find(resource => resource instanceof UserResource);
   if (userResource) {
     app.use(authPopulate({ User: userResource.model, secret }));
     userResource.extensions({ Token, secret });
