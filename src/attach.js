@@ -74,10 +74,10 @@ module.exports = function attach({
   const tokenSchema = new TokenSchema();
   const Token = tokenSchema.compile(token);
   app.use(tokenPopulate({ Token, secret }));
-  const userResource = resources.find(resource => console.log(resource instanceof UserResource) || resource instanceof UserResource);
+  const userResource = resources.find(resource => resource instanceof UserResource);
   if (userResource) {
     app.use(authPopulate({ User: userResource.model, secret }));
-    userResource.extensions({ Token, secret });
+    userResource.option({ Token, secret });
   }
   resources.forEach(resource => resource.attach(app));
   environmentCheck(app);

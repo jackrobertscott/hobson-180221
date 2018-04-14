@@ -88,12 +88,10 @@ module.exports.middlify = function middlify(middleware, resources, finish = fals
 /**
  * Format hooks and execute work.
  */
-module.exports.hookify = function hookify(key, handler, preHooks, postHooks) {
+module.exports.hookify = function hookify(key, handler, befores, afters) {
   return async (options) => {
-    if (preHooks.has(key)) {
-      const tasks = preHooks.get(key).map(hook => hook(options));
-      await Promise.all(tasks);
-    }
+    const tasksBefore = befores.map(hook => hook(options));
+    await Promise.all(tasksBefore);
     let data;
     try {
       data = await handler(options);
@@ -117,11 +115,9 @@ module.exports.hookify = function hookify(key, handler, preHooks, postHooks) {
         code: HTTPStatus.INTERNAL_SERVER_ERROR,
       });
     }
-    if (postHooks.has(key)) {
-      Object.assign(options, { data });
-      const tasks = postHooks.get(key).map(hook => hook(options));
-      await Promise.all(tasks);
-    }
+    Object.assign(options, { data });
+    const tasksAfter = afters.map(hook => hook(options));
+    await Promise.all(tasksAfter);
     return data;
   };
 };
@@ -131,10 +127,7 @@ module.exports.hookify = function hookify(key, handler, preHooks, postHooks) {
  */
 module.exports.permissionify = function permissionify(key, permissions, defaultOpen) {
   return async (...args) => {
-    let checks = [];
-    if (permissions.has(key)) {
-      checks = permissions.get(key).map(check => check(...args));
-    }
+    const checks = permissions.map(check => check(...args));
     const status = await Promise.all(checks);
     if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
       throw new errors.Response({

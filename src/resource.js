@@ -33,17 +33,20 @@ module.exports = class Resource {
     name,
     address,
     options = {},
+    unsecure = false,
   } = {}) {
     expect({ name: 'model', value: model, type: 'function' });
     expect({ name: 'name', value: name, type: 'string', optional: true });
     expect({ name: 'address', value: name, type: 'string', optional: true });
+    expect({ name: 'unsecure', value: unsecure, type: 'boolean', optional: true });
     expect({ name: 'options', value: options, type: 'object' });
     const nickname = name || model.modelName;
     this.name = camelCase(singular(nickname));
     this.address = address || `/${camelCase(plural(nickname))}`;
     this.model = model;
-    this.options = options;
+    this.options = Object.assign({ name: this.name }, options);
     this.routes = new Map();
+    this.unsecure = unsecure;
     this.defaults();
   }
 
@@ -55,44 +58,51 @@ module.exports = class Resource {
       id: 'find',
       path: '/',
       method: 'get',
-      handler: find(this.name, this.options),
+      handler: (...args) => find(this.options)(...args),
     });
     this.add({
       id: 'count',
       path: '/count',
       method: 'get',
-      handler: count(this.name, this.options),
+      handler: (...args) => count(this.options)(...args),
     });
     this.add({
       id: 'findOne',
       path: '/one',
       method: 'get',
-      handler: findOne(this.name, this.options),
+      handler: (...args) => findOne(this.options)(...args),
     });
     this.add({
       id: 'findById',
       path: `/:${this.name}Id`,
       method: 'get',
-      handler: findById(this.name, this.options),
+      handler: (...args) => findById(this.options)(...args),
     });
     this.add({
       id: 'create',
       path: '/',
       method: 'post',
-      handler: create(this.name, this.options),
+      handler: (...args) => create(this.options)(...args),
     });
     this.add({
       id: 'update',
       path: `/:${this.name}Id`,
       method: 'patch',
-      handler: update(this.name, this.options),
+      handler: (...args) => update(this.options)(...args),
     });
     this.add({
       id: 'remove',
       path: `/:${this.name}Id`,
       method: 'delete',
-      handler: remove(this.name, this.options),
+      handler: (...args) => remove(this.options)(...args),
     });
+  }
+
+  /**
+   * Set some options on a resource.
+   */
+  option(option = {}) {
+    this.options = Object.assign({}, option, this.options);
   }
 
   /**
@@ -136,8 +146,8 @@ module.exports = class Resource {
           Model: this.model,
           context: {}, // empty object which can be used to pass information between methods
         };
-        const permission = middlify(permissionify(key, this.permissions, unsecure), resources);
-        const hooked = hookify(key, route.handler, this.preHooks, this.postHooks);
+        const permission = middlify(permissionify(key, route.permissions, unsecure), resources);
+        const hooked = hookify(key, route.handler, route.befores, route.afters);
         const work = middlify(hooked, resources, true);
         router[lowerCase(route.method)](route.path, ...route.middlewares, permission, work);
       });

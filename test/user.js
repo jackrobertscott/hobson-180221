@@ -1,20 +1,11 @@
-require('dotenv').config();
-
 const { expect } = require('chai');
-const request = require('supertest');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
 const faker = require('faker');
-const app = require('../use/app')();
+const userResource = require('./user/user.resource');
+const User = require('./user/user.model');
 const { createUserToken } = require('../lib/utils/auth');
-const { attach } = require('../lib/index');
-const User = require('../use/user/user.model');
-const userResource = require('../use/user/user.resource');
-
-const server = request(app);
-const secret = 'ajsdgfadfakjsdhfkjk';
-const resources = [userResource];
-attach({ app, secret, resources });
+const { server, secret } = require('./common');
 
 describe('User resource', () => {
 
@@ -28,9 +19,13 @@ describe('User resource', () => {
     const tasks = [{
       email: faker.internet.email(),
       password,
+      firstName: 'Fred',
+      lastName: 'Blogs',
     }, {
       email: faker.internet.email(),
       password: faker.internet.password(),
+      firstName: 'Sussie',
+      lastName: 'Pots',
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
     const auth = await createUserToken({
@@ -41,9 +36,8 @@ describe('User resource', () => {
     userToken = auth.token;
   });
 
-  it('should have the correct resource name', () => expect(userResource.resourceName).to.equal('user'));
+  it('should have the correct resource name', () => expect(userResource.name).to.equal('user'));
   it('should have the correct address', () => expect(userResource.address).to.equal('/users'));
-  it('should have the correct model name', () => expect(userResource.name).to.equal('User'));
 
   it('should fail getting all users', () => server.get('/users')
     .set('Accept', 'application/json')
@@ -63,6 +57,10 @@ describe('User resource', () => {
       expect(status).to.equal('success');
       expect(code).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('user');
+      expect(data.user).to.have.property('email');
+      expect(data.user).to.have.property('firstName');
+      expect(data.user).to.have.property('lastName');
+      expect(data.user).to.not.have.property('password');
     }));
 
   it('should fail to update a user', () => server.patch(`/users/${String(users[0].id)}`)

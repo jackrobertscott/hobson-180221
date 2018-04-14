@@ -1,17 +1,8 @@
-require('dotenv').config();
-
 const { expect } = require('chai');
-const request = require('supertest');
 const HTTPStatus = require('http-status');
-const { attach } = require('../lib/index');
-const app = require('../use/app')();
-const exampleResource = require('../use/example/example.resource');
-const Example = require('../use/example/example.model');
-
-const server = request(app);
-const secret = 'ajsdgfadfakjsdhfkjk';
-const resources = [exampleResource];
-attach({ app, secret, resources });
+const exampleResource = require('./example/example.resource');
+const Example = require('./example/example.model');
+const { server } = require('./common');
 
 describe('Standard resource', () => {
 
@@ -29,9 +20,8 @@ describe('Standard resource', () => {
     examples = await Promise.all(tasks);
   });
 
-  it('should have the correct resource name', () => expect(exampleResource.resourceName).to.equal('example'));
+  it('should have the correct resource name', () => expect(exampleResource.name).to.equal('example'));
   it('should have the correct address', () => expect(exampleResource.address).to.equal('/examples'));
-  it('should have the correct model name', () => expect(exampleResource.name).to.equal('Example'));
 
   it('should show the correct environment check', () => server.get('/')
     .set('Accept', 'application/json')

@@ -8,7 +8,7 @@ const errors = require('../errors');
  *
  * @param {string} name the resource name
  */
-module.exports.find = function find(name, { safe } = {}) {
+module.exports.find = function find({ name, safe } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
     let options = {};
@@ -34,7 +34,7 @@ module.exports.find = function find(name, { safe } = {}) {
  *
  * @param {string} name the resource name
  */
-module.exports.count = function count(name, { safe } = {}) {
+module.exports.count = function count({ name, safe } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ query: { filter }, Model }) => {
     let options = {};
@@ -54,7 +54,7 @@ module.exports.count = function count(name, { safe } = {}) {
  *
  * @param {string} name the resource name
  */
-module.exports.findOne = function findOne(name, { safe } = {}) {
+module.exports.findOne = function findOne({ name, safe } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ Model, query: { filter, include, select } }) => {
     let options = {};
@@ -80,7 +80,7 @@ module.exports.findOne = function findOne(name, { safe } = {}) {
  *
  * @param {string} name the resource name
  */
-module.exports.findById = function findById(name) {
+module.exports.findById = function findById({ name } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, Model, query: { include, select } }) => {
     const id = params[`${name}Id`];
@@ -106,7 +106,7 @@ module.exports.findById = function findById(name) {
  *
  * @param {string} name the resource name
  */
-module.exports.create = function create(name) {
+module.exports.create = function create({ name } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ body, Model }) => {
     const value = await Model.create(body);
@@ -124,7 +124,7 @@ module.exports.create = function create(name) {
  *
  * @param {string} name the resource name
  */
-module.exports.update = function update(name) {
+module.exports.update = function update({ name } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, body, Model }) => {
     const id = params[`${name}Id`];
@@ -148,7 +148,7 @@ module.exports.update = function update(name) {
  *
  * @param {string} name the resource name
  */
-module.exports.remove = function remove(name, { safe, timestamps } = {}) {
+module.exports.remove = function remove({ name, safe, timestamps } = {}) {
   expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, Model }) => {
     const id = params[`${name}Id`];
