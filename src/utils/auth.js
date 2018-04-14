@@ -87,3 +87,17 @@ module.exports.authPopulate = function authPopulate({ User }) {
     }
   };
 };
+
+/**
+ * Create and save a token with a user.
+ */
+module.exports.createUserToken = async function createUserToken({ Token, user, secret, options } = {}) {
+  const { authPackage } = module.exports;
+  const item = new Token({});
+  const pack = authPackage({
+    id: item.id,
+    userId: user.id,
+    email: user.email,
+  }, secret, options);
+  return Object.assign(item, pack).save();
+};

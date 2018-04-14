@@ -1,20 +1,7 @@
 const HTTPStatus = require('http-status');
-const { authPackage } = require('../utils/auth');
 const { expect } = require('../utils/helpers');
 const errors = require('../errors');
-
-/**
- * Create and save a token with a user.
- */
-async function createToken({ Token, user, secret, options } = {}) {
-  const item = new Token({});
-  const pack = authPackage({
-    id: item.id,
-    userId: user.id,
-    email: user.email,
-  }, secret, options);
-  return Object.assign(item, pack).save();
-}
+const { createUserToken } = require('../utils/auth');
 
 /**
  * Login a user with the provided credentials.
@@ -39,7 +26,7 @@ module.exports.login = function login({ Token, secret } = {}) {
         code: HTTPStatus.BAD_REQUEST,
       });
     }
-    const auth = await createToken({ Token, user, secret });
+    const auth = await createUserToken({ Token, user, secret });
     const { payload = {} } = auth;
     return {
       auth: {
@@ -70,7 +57,7 @@ module.exports.register = function register({ Token, secret } = {}) {
     if (!user) {
       throw new errors.Response({ message: 'Error occurred while creating user.' });
     }
-    const auth = await createToken({ Token, user, secret });
+    const auth = await createUserToken({ Token, user, secret });
     const { payload = {} } = auth;
     return {
       user,
@@ -148,7 +135,7 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
         code: HTTPStatus.BAD_REQUEST,
       });
     }
-    const auth = await createToken({ Token, user, secret, options: { expiresIn: '1h' } });
+    const auth = await createUserToken({ Token, user, secret, options: { expiresIn: '1h' } });
     Object.assign(context, { auth });
     return {}; // nothing to return...
   };

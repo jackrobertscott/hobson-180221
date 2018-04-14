@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const { Schema } = require('../../lib/index');
 
-const exampleSchema = new mongoose.Schema({
+const exampleSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -18,4 +18,4 @@ const exampleSchema = new mongoose.Schema({
   },
 });
 
-module.exports = exampleSchema;
+module.exports = exampleSchema.compile('Example');

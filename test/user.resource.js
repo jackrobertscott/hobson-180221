@@ -4,20 +4,17 @@ const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
 const mongoose = require('mongoose');
-const { connect } = require('../lib/index');
 const faker = require('faker');
 const app = require('../use/app')();
-const { createToken } = require('../lib/utils/user');
+const { createUserToken } = require('../lib/utils/auth');
+const { attach } = require('../lib/index');
+const User = require('../use/user/user.model');
 const userResource = require('../use/user/user.resource');
 
-const secret = 'ajsdgfadfakjsdhfkjk';
-connect({
-  app,
-  resources: [userResource],
-  secret,
-});
-const User = userResource.model;
 const server = request(app);
+const secret = 'ajsdgfadfakjsdhfkjk';
+const resources = [userResource];
+attach({ app, secret, resources });
 
 describe('User resource', () => {
 
@@ -36,7 +33,7 @@ describe('User resource', () => {
       password: faker.internet.password(),
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
-    const auth = await createToken({
+    const auth = await createUserToken({
       Token: mongoose.model('Token'),
       user: users[0],
       secret,

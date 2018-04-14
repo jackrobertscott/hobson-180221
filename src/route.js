@@ -50,7 +50,7 @@ module.exports = class Route {
    *
    * @param {function} permission a function (or async function) which resolved to true if allowed.
    */
-  permission(permission) {
+  access(permission) {
     expect({ name: 'permission', value: permission, type: 'function' });
     this.permissions.push(permission);
     return this;

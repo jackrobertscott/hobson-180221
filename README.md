@@ -153,7 +153,6 @@ const findGreenUnicons = new Route({
   handler: async () => console.log('do things here'),
 });
 
-
 unicornResource.add(findGreenUnicorns);
 ```
 
@@ -162,8 +161,8 @@ unicornResource.add(findGreenUnicorns);
 Routes are **protected by default**. Provide permission functions to give access to your users.
 
 ```js
-unicornResource.route('findGreenUnicorns')
-  .permission(({ user }) => {
+unicornResource.get('findGreenUnicorns')
+  .access(({ user }) => {
     return user.role === ROLE_ADMIN; // access given to only admins
   });
 ```
@@ -173,7 +172,7 @@ unicornResource.route('findGreenUnicorns')
 Provide hooks to your endpoints which will run before and after the main handler. There is also a helpful `context` object which you can use to assign data to access throughout your function chain.
 
 ```js
-unicornResource.route('findGreenUnicorns')
+unicornResource.get('findGreenUnicorns')
   .before(({ context }) => {
     context.appendMessage = 'Hi Fred,';
   })
@@ -185,7 +184,7 @@ unicornResource.route('findGreenUnicorns')
 You can also use old express middleware too. When added, these will run before all the other functions.
 
 ```js
-unicornResource.route('findGreenUnicorns')
+unicornResource.get('findGreenUnicorns')
   .middleware((req, res, next) => {
     req.example = 'Hello there!';
     next(); // important: make sure to call next

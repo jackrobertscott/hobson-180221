@@ -1,23 +1,25 @@
-const { UserResource, access } = require('../../lib/index');
-const userSchema = require('./user.schema');
+const { UserResource, Permission } = require('../../lib/index');
+const User = require('./user.model');
 
-const userResource = new UserResource({
-  name: 'User',
-  schema: userSchema,
+const userResource = new UserResource({ model: User });
+
+/**
+ * Custom endpoints.
+ */
+userResource.add({
+  id: 'check',
+  path: '/check',
+  method: 'get',
+  handler: () => ({ working: true }),
 });
+userResource.get('check').access(Permission.isUser());
 
-userResource
-  .addEndpoint('check', {
-    path: '/check',
-    method: 'get',
-    handler: () => ({ working: true }),
-  })
-  .addPermission('check', access.isUser());
-
-userResource
-  .addPermission('findById', access.isUser())
-  .addPermission('changePassword', access.isUser())
-  .addPermission('forgotPassword', access.isAnyone())
-  .addPermission('resetPassword', access.isTokenized());
+/**
+ * General permissions.
+ */
+userResource.get('findById').access(Permission.isUser());
+userResource.get('changePassword').access(Permission.isUser());
+userResource.get('forgotPassword').access(Permission.isAnyone());
+userResource.get('resetPassword').access(Permission.isTokenized());
 
 module.exports = userResource;

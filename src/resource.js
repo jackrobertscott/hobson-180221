@@ -34,7 +34,7 @@ module.exports = class Resource {
     address,
     options = {},
   } = {}) {
-    expect({ name: 'model', value: model, type: 'object' });
+    expect({ name: 'model', value: model, type: 'function' });
     expect({ name: 'name', value: name, type: 'string', optional: true });
     expect({ name: 'address', value: name, type: 'string', optional: true });
     expect({ name: 'options', value: options, type: 'object' });
@@ -44,6 +44,7 @@ module.exports = class Resource {
     this.model = model;
     this.options = options;
     this.routes = new Map();
+    this.defaults();
   }
 
   /**
@@ -101,7 +102,7 @@ module.exports = class Resource {
    */
   add(data) {
     expect({ name: 'data', value: data, type: 'object' });
-    if (typeof data.permission === 'function' && typeof data.before === 'function' && typeof data.after === 'function') {
+    if (typeof data.access === 'function' && typeof data.before === 'function' && typeof data.after === 'function') {
       this.routes.set(data.id, data);
     } else {
       this.routes.set(data.id, new Route(data));
@@ -114,7 +115,7 @@ module.exports = class Resource {
    *
    * @param {string} id the id matching the route.
    */
-  route(id) {
+  get(id) {
     expect({ name: 'id', value: id, type: 'string' });
     if (this.routes.has(id)) {
       return this.routes.get(id);
@@ -129,17 +130,16 @@ module.exports = class Resource {
     const router = Router();
     [...this.routes.entries()]
       .sort(orderRoutes)
-      .forEach(([key, item]) => {
-        const unsecure = typeof item.open === 'boolean' ? item.open : this.unsecure;
+      .forEach(([key, route]) => {
+        const unsecure = typeof route.open === 'boolean' ? route.open : this.unsecure;
         const resources = {
           Model: this.model,
-          context: {}, // empty object which can be used to pass information between middlewares
+          context: {}, // empty object which can be used to pass information between methods
         };
-        const middleware = this.middleware.has(key) ? this.middleware.get(key) : [];
         const permission = middlify(permissionify(key, this.permissions, unsecure), resources);
-        const hooked = hookify(key, item.handler, this.preHooks, this.postHooks);
+        const hooked = hookify(key, route.handler, this.preHooks, this.postHooks);
         const work = middlify(hooked, resources, true);
-        this.router[lowerCase(item.method)](item.path, ...middleware, permission, work);
+        router[lowerCase(route.method)](route.path, ...route.middlewares, permission, work);
       });
     return router;
   }
@@ -149,9 +149,9 @@ module.exports = class Resource {
    */
   attach(app) {
     if (app && typeof app.use === 'function') {
-      app.use(this.address, this.compile());
+      return app.use(this.address, this.compile());
     }
-    throw new errors.Response({ message: `Expected "app" paramater to be an express app but got ${app}.` });
+    throw new errors.Response({ message: `Expected "app" paramater to be an express app but got ${typeof app}.` });
   }
 
 };

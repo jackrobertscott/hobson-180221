@@ -3,17 +3,15 @@ require('dotenv').config();
 const { expect } = require('chai');
 const request = require('supertest');
 const HTTPStatus = require('http-status');
-const { connect } = require('../lib/index');
+const { attach } = require('../lib/index');
 const app = require('../use/app')();
 const exampleResource = require('../use/example/example.resource');
+const Example = require('../use/example/example.model');
 
-connect({
-  app,
-  resources: [exampleResource],
-  secret: 'ajsdgfadfakjsdhfkjk',
-});
-const Example = exampleResource.model;
 const server = request(app);
+const secret = 'ajsdgfadfakjsdhfkjk';
+const resources = [exampleResource];
+attach({ app, secret, resources });
 
 describe('Standard resource', () => {
 
