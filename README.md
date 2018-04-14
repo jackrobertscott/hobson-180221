@@ -68,10 +68,7 @@ File: `unicorn.model.js`
 const { create } = require('hobson');
 const unicornSchema = require('./unicorn.schema.js');
 
-const Unicorn = create({
-  name: 'Unicorn',
-  schema: unicornSchema,
-});
+const Unicorn = unicornSchema.compile('Unicorn');
 
 module.exports = Unicorn;
 ```

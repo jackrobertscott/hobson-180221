@@ -45,4 +45,14 @@ module.exports = class Schema extends mongoose.Schema {
     super(Object.assign(mixins, shape), configuration);
   }
 
+  /**
+   * Defines a model on the database with this schema.
+   *
+   * @param {string} name the name of the model to be saved to the database.
+   */
+  compile(name) {
+    expect({ name: 'name', value: name, type: 'string' });
+    return mongoose.model(name, this);
+  }
+
 };
