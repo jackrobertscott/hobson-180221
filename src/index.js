@@ -1,17 +1,13 @@
 require('babel-polyfill');
 
-const Resource = require('./resource');
-const UserResource = require('./user.resource');
-const TokenResource = require('./token.resource');
-const connect = require('./connect');
-const { ResponseError } = require('./utils/errors');
-const access = require('./access');
+module.exports.attach = require('./attach');
+module.exports.errors = require('./errors');
 
-module.exports = {
-  Resource,
-  UserResource,
-  TokenResource,
-  ResponseError,
-  connect,
-  access,
-};
+module.exports.Schema = require('./schema');
+module.exports.Route = require('./route');
+module.exports.Resource = require('./resource');
+module.exports.Permission = require('./permission');
+
+module.exports.TokenSchema = require('./token/schema');
+module.exports.UserSchema = require('./user/schema');
+module.exports.UserResource = require('./user/resource');

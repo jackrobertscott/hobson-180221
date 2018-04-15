@@ -1,13 +1,13 @@
 const HTTPStatus = require('http-status');
 
-class ResponseError extends Error {
+module.exports.Response = class Response extends Error {
 
   constructor({ message, code = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
     if (message && typeof message !== 'string') {
-      throw new Error('Expected "message" parameter passed to new ResponseError() to be a string.');
+      throw new Error('Expected "message" parameter passed to new errors.Response() to be a string.');
     }
     if (code && typeof code !== 'number') {
-      throw new Error('Expected "code" parameter passed to new ResponseError() to be a number.');
+      throw new Error('Expected "code" parameter passed to new errors.Response() to be a number.');
     }
     let status;
     if (code >= 500 && code < 600) {
@@ -23,8 +23,7 @@ class ResponseError extends Error {
     if (data) {
       this.data = data;
     }
-    Error.captureStackTrace(this, ResponseError);
+    Error.captureStackTrace(this, Response);
   }
 
-}
-module.exports.ResponseError = ResponseError;
+};

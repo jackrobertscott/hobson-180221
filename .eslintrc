@@ -6,7 +6,8 @@
 		"padded-blocks": "off",
 		"no-confusing-arrow": "off",
 		"no-underscore-dangle": "off",
-		"linebreak-style": 0
+		"linebreak-style": 0,
+		"valid-typeof": "off"
 	},
 	"env": {
 		"node": true,

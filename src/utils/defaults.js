@@ -1,16 +1,15 @@
-const { camelCase } = require('change-case');
-const { plural, singular } = require('pluralize');
 const HTTPStatus = require('http-status');
-const { checkString, checkObjectId } = require('./helpers');
-const { ResponseError } = require('./errors');
+const { plural, singular } = require('pluralize');
+const { expect, checkObjectId } = require('./helpers');
+const errors = require('../errors');
 
 /**
  * Find many items in the database.
  *
  * @param {string} name the resource name
  */
-function find(name, { safe } = {}) {
-  checkString(name, { method: camelCase(`find${name}`) });
+module.exports.find = function find({ name, safe } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
     let options = {};
     if (safe) options = { deleted: false };
@@ -22,43 +21,41 @@ function find(name, { safe } = {}) {
     if (limit) query.limit(Number(limit));
     const value = await query.exec();
     if (!value) {
-      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
+      throw new errors.Response({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
     return {
       [plural(name)]: value,
     };
   };
-}
-module.exports.find = find;
+};
 
 /**
  * Count the number of items in the database.
  *
  * @param {string} name the resource name
  */
-function count(name, { safe } = {}) {
-  checkString(name, { method: camelCase(`count${name}`) });
+module.exports.count = function count({ name, safe } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ query: { filter }, Model }) => {
     let options = {};
     if (safe) options = { deleted: false };
     const value = await Model.count(Object.assign(options, filter || {}));
     if (typeof value !== 'number') {
-      throw new ResponseError({ message: `Error occurred when attempting to query the "${name}" model.` });
+      throw new errors.Response({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
     return {
       count: value,
     };
   };
-}
-module.exports.count = count;
+};
 
 /**
  * Find one item in the database.
  *
  * @param {string} name the resource name
  */
-function findOne(name, { safe } = {}) {
-  checkString(name, { method: camelCase(`findOne${name}`) });
+module.exports.findOne = function findOne({ name, safe } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ Model, query: { filter, include, select } }) => {
     let options = {};
     if (safe) options = { deleted: false };
@@ -67,7 +64,7 @@ function findOne(name, { safe } = {}) {
     if (select) query.select(select);
     const value = await query.exec();
     if (!value) {
-      throw new ResponseError({
+      throw new errors.Response({
         message: `Model ${name} did not have an item with the given parameters.`,
         code: HTTPStatus.NOT_FOUND,
       });
@@ -76,16 +73,15 @@ function findOne(name, { safe } = {}) {
       [singular(name)]: value,
     };
   };
-}
-module.exports.findOne = findOne;
+};
 
 /**
  * Find one item in the database by it's id.
  *
  * @param {string} name the resource name
  */
-function findById(name) {
-  checkString(name, { method: camelCase(`findById${name}`) });
+module.exports.findById = function findById({ name } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, Model, query: { include, select } }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
@@ -94,7 +90,7 @@ function findById(name) {
     if (select) query.select(select);
     const value = await query.exec();
     if (!value) {
-      throw new ResponseError({
+      throw new errors.Response({
         message: `Model ${name} did not have an item with the id "${id}".`,
         code: HTTPStatus.NOT_FOUND,
       });
@@ -103,41 +99,39 @@ function findById(name) {
       [singular(name)]: value,
     };
   };
-}
-module.exports.findById = findById;
+};
 
 /**
  * Create a resource item in the database.
  *
  * @param {string} name the resource name
  */
-function create(name) {
-  checkString(name, { method: camelCase(`create${name}`) });
+module.exports.create = function create({ name } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ body, Model }) => {
     const value = await Model.create(body);
     if (!value) {
-      throw new ResponseError({ message: `Error occurred creating an item for "${name}" model.` });
+      throw new errors.Response({ message: `Error occurred creating an item for "${name}" model.` });
     }
     return {
       [singular(name)]: value,
     };
   };
-}
-module.exports.create = create;
+};
 
 /**
  * Update a resource item in the database.
  *
  * @param {string} name the resource name
  */
-function update(name) {
-  checkString(name, { method: camelCase(`update${name}`) });
+module.exports.update = function update({ name } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, body, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
     const value = await Model.findById(id);
     if (!value) {
-      throw new ResponseError({
+      throw new errors.Response({
         message: `Model ${name} did not have an item with the id "${id}".`,
         code: HTTPStatus.NOT_FOUND,
       });
@@ -147,23 +141,22 @@ function update(name) {
       [singular(name)]: value,
     };
   };
-}
-module.exports.update = update;
+};
 
 /**
  * Remove a resource from the database.
  *
  * @param {string} name the resource name
  */
-function remove(name, { safe, timestamps } = {}) {
-  checkString(name, { method: camelCase(`remove${name}`) });
+module.exports.remove = function remove({ name, safe, timestamps } = {}) {
+  expect({ name: 'name', value: name, type: 'string' });
   return async ({ params, Model }) => {
     const id = params[`${name}Id`];
     checkObjectId(id);
     if (safe) {
       const value = await Model.findById(id);
       if (!value) {
-        throw new ResponseError({
+        throw new errors.Response({
           message: `Model ${name} did not have an item with the id "${id}".`,
           code: HTTPStatus.NOT_FOUND,
         });
@@ -178,5 +171,4 @@ function remove(name, { safe, timestamps } = {}) {
       [singular(name)]: null,
     };
   };
-}
-module.exports.remove = remove;
+};

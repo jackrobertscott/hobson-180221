@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 const HTTPStatus = require('http-status');
-const { ResponseError } = require('./errors');
+const errors = require('../errors');
 
 /**
  * Generate an authentication token which can be sent to the client to
  * verify future requests.
  */
-function generateToken(payload, secret, options = {}) {
+module.exports.generateToken = function generateToken(payload, secret, options = {}) {
   const data = Object.assign({
     expiresIn: '30d',
   }, options);
@@ -14,21 +14,20 @@ function generateToken(payload, secret, options = {}) {
     ...data,
     token: jwt.sign(payload, secret, data),
   };
-}
-module.exports.generateToken = generateToken;
+};
 
 /**
  * Decode a jwt token.
  */
-function decodeToken(token, secret) {
+module.exports.decodeToken = function decodeToken(token, secret) {
   return jwt.verify(token, secret);
-}
-module.exports.decodeToken = decodeToken;
+};
 
 /**
  * Package the authentication.
  */
-function authPackage(payload, secret, options) {
+module.exports.authPackage = function authPackage(payload, secret, options) {
+  const { generateToken, decodeToken } = module.exports;
   const { token } = generateToken(payload, secret, options);
   const { iat, exp } = decodeToken(token, secret);
   return {
@@ -37,13 +36,13 @@ function authPackage(payload, secret, options) {
     expires: exp,
     iat,
   };
-}
-module.exports.authPackage = authPackage;
+};
 
 /**
  * Populate a token found on the request.
  */
-function tokenPopulate({ Model, secret }) {
+module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
+  const { decodeToken } = module.exports;
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
       next();
@@ -51,12 +50,12 @@ function tokenPopulate({ Model, secret }) {
     }
     const token = req.headers.authorization;
     const auth = decodeToken(token, secret);
-    Model.findById(auth.id)
+    Token.findById(auth.id)
       .then((issue) => {
         if (issue.active) {
           Object.assign(req, { auth: issue });
         } else {
-          throw new ResponseError({
+          throw new errors.Response({
             message: 'Token is not active. Please reauthenticate.',
             code: HTTPStatus.UNAUTHORIZED,
           });
@@ -65,20 +64,19 @@ function tokenPopulate({ Model, secret }) {
       })
       .catch(next);
   };
-}
-module.exports.tokenPopulate = tokenPopulate;
+};
 
 /**
  * Populate authentication on request if auth found.
  */
-function authPopulate({ Model }) {
+module.exports.authPopulate = function authPopulate({ User }) {
   return (req, res, next) => {
     if (!req.auth) {
       next();
       return;
     }
-    if (req.auth && Model) {
-      Model.findById(req.auth.payload.userId)
+    if (req.auth && User) {
+      User.findById(req.auth.payload.userId)
         .then((user) => {
           req.user = user;
           next();
@@ -88,5 +86,18 @@ function authPopulate({ Model }) {
       next();
     }
   };
-}
-module.exports.authPopulate = authPopulate;
+};
+
+/**
+ * Create and save a token with a user.
+ */
+module.exports.createUserToken = async function createUserToken({ Token, user, secret, options } = {}) {
+  const { authPackage } = module.exports;
+  const item = new Token({});
+  const pack = authPackage({
+    id: item.id,
+    userId: user.id,
+    email: user.email,
+  }, secret, options);
+  return Object.assign(item, pack).save();
+};

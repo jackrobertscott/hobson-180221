@@ -1,19 +1,17 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
-const mongoose = require('mongoose');
+const errors = require('./errors');
+const TokenSchema = require('./token/schema');
 const { formatResponse } = require('./utils/helpers');
-const { ResponseError } = require('./utils/errors');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
-const TokenResource = require('./token.resource');
+const UserResource = require('./user/resource');
 
 /**
  * Parse the body of the requests.
  */
-function parseRequest(app, parse) {
-  if (parse) {
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-  }
+function parseRequest(app) {
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 }
 
 /**
@@ -22,7 +20,7 @@ function parseRequest(app, parse) {
 function catchErrors(app, debug) {
   return app
     .use((req, res, next) => {
-      const error = new ResponseError({
+      const error = new errors.Response({
         message: 'Request address does not exist on the api.',
         code: HTTPStatus.NOT_FOUND,
       });
@@ -52,11 +50,8 @@ function environmentCheck(app) {
 
 /**
  * Connect resources to the express app.
- *
- * @param {Object} options.app the express app instance
- * @param {Array} options.resources the express app instance
  */
-function connect({
+module.exports = function attach({
   app,
   resources,
   secret,
@@ -65,36 +60,26 @@ function connect({
   token = 'Token',
 }) {
   if (typeof app !== 'function' || typeof app.use !== 'function') {
-    throw new Error('Parameter "app" must be an express app instance.');
+    throw new errors.Response({ message: 'Parameter "app" must be an express app instance.' });
   }
   if (!resources || !Array.isArray(resources)) {
-    throw new Error('Parameter "resources" must be an array of resources.');
+    throw new errors.Response({ message: 'Parameter "resources" must be an array of resources.' });
   }
   if (typeof secret !== 'string') {
-    throw new Error('Parameter "secret" must be a random string used to authenticate requests.');
+    throw new errors.Response({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
   }
-  parseRequest(app, parse);
-  const tokenResource = resources.find(resource => resource.token) || new TokenResource({
-    name: token,
-    schema: new mongoose.Schema({}),
-  });
-  app.use(tokenPopulate({
-    Model: tokenResource.model,
-    secret,
-  }));
-  const userResource = resources.find(resource => resource.auth);
+  if (parse) {
+    parseRequest(app, parse);
+  }
+  const tokenSchema = new TokenSchema();
+  const Token = tokenSchema.compile(token);
+  app.use(tokenPopulate({ Token, secret }));
+  const userResource = resources.find(resource => resource instanceof UserResource);
   if (userResource) {
-    app.use(authPopulate({
-      Model: userResource.model,
-      secret,
-    }));
-    userResource.addExtensions({
-      Token: tokenResource.model,
-      secret,
-    });
+    app.use(authPopulate({ User: userResource.model, secret }));
+    userResource.option({ Token, secret });
   }
   resources.forEach(resource => resource.attach(app));
   environmentCheck(app);
   catchErrors(app, debug);
-}
-module.exports = connect;
+};
