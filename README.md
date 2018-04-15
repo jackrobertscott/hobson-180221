@@ -6,16 +6,17 @@
 
 Get up and running with a fully functioning CRUD API, with minimum configuration. Get all the functionality of a fully loaded framework with only the smallest amount of configuration.
 
-## Features
+## Highlights
 
-RESTful endpoint features:
+The hobson framework follows a RESTful approach. It uses *models* to define database relations and *resources* to provide endpoints to query the database.
 
-- Optional CRUD endpoints provided by default
-- Custom endpoints can be added
-- Endpoints are protected by default
-- Provide permission functions to allow access
-- Mongoose model schemas
-- Pre and post hooks to all endpoints
+- Provides commonly used CRUD endpoints out of the box
+- Easily add and configure endpoints
+- Endpoints take a *protected by default* approach to ensure security
+- Provides stateless authentication using tokens
+- Mongoose is used to provide great schema validation, hooks, etc.
+- Before and after hooks are provided
+- Easily integrates with existing express apps
 
 ## Install
 
@@ -29,11 +30,11 @@ Hobson uses [mongoose](https://github.com/Automattic/mongoose) under the hood as
 
 ## Usage
 
-Hobson takes advantage of the awesome powers of mongoose for defining schemas and models.
+Hobson is straight forwards in that it has 2 main types of components; models and resources. Models handle data interations and resources provide easy to use API endpoints.
 
-**Step 1.** Create a schema
+**Step 1.** Create a model with a schema
 
-File: `unicorn.schema.js`
+File: `unicorn.model.js`
 
 ```js
 const { Schema } = require('hobson');
@@ -57,23 +58,12 @@ const unicornSchema = Schema({
 
 // unicornSchema is a mongoose schema which means you can create virtuals, methods, etc. on it.
 
-module.exports = unicornSchema;
+unicornSchema.virtual('today').get(() => Date.now());
+
+module.exports = unicornSchema.compile('Unicorn'); // returns the Unicorn model
 ```
 
-**Step 2.** Create a model from the schema
-
-File: `unicorn.model.js`
-
-```js
-const { create } = require('hobson');
-const unicornSchema = require('./unicorn.schema.js');
-
-const Unicorn = unicornSchema.compile('Unicorn');
-
-module.exports = Unicorn;
-```
-
-**Step 3.** Create a resource
+**Step 2.** Create a resource from a model
 
 File: `unicorn.resource.js`
 
@@ -83,41 +73,24 @@ const Unicorn = require('./unicorn.model.js');
 
 const unicornResource = new Resource({ model: Unicorn });
 
-// extra routes go here...
+// route configuration here...
 
 module.exports = unicornResource;
 ```
 
-**Step 4.** Create additional routes
+**Step 3.** Connect to your express app
 
-File: `unicorn.resource.js`
-
-```js
-const { Route, Resource } = require('hobson');
-
-// ...
-
-const findGreenUnicons = new Route({
-  id: 'findGreenUnicons',
-  path: '/green',
-  methods: 'get',
-  handler: async () => console.log('do things here'),
-});
-
-unicornResource.add(findGreenUnicorns);
-
-module.exports = unicornResource;
-```
-
-**Step 5.** Connect hobson to express
+File: `app.js`
 
 ```js
-const app = express();
+const hobson = require('hobson');
+const app = require('express')();
 
-// add any middleware or routes...
+// add middlewares and configurations to express app...
 
-connect({
+hobson.attach({
   app,
+  secret: process.env.SUPER_SECRET_FOR_AUTHENTICATION,
   resources: [
     unicornResource,
     // others...
@@ -127,11 +100,19 @@ connect({
 
 ### Endpoints
 
+All endpoints have a unique string ID by which you can use to access them. To access an resource's endpoint, use the `get` method.
+
+```js
+unicornResource.get('findById');
+```
+
+To overwrite an endpoint, simply provide your endpoint configuration with the same ID value.
+
 #### CRUD Endpoints Provided
 
 The hobson resource creates endpoints for you like you would on a regular RESTful API.
 
-| Type          | Method      | Endpoint                | Example                                 |
+| ID            | Method      | Endpoint                | Example                                 |
 |---------------|-------------|-------------------------|-----------------------------------------|
 | `find`        | get         | `/unicorns`             | `/unicorns?filter[color]=purple`        |
 | `count`       | get         | `/unicorns/count`       | `/unicorns/count?filter[color]=yellow`  |
@@ -144,6 +125,8 @@ The hobson resource creates endpoints for you like you would on a regular RESTfu
 #### Custom Endpoints
 
 Here is how you add custom endpoints to the resource.
+
+File: `unicorn.resource.js`
 
 ```js
 const findGreenUnicons = new Route({
@@ -158,7 +141,9 @@ unicornResource.add(findGreenUnicorns);
 
 ### Authentication
 
-Routes are **protected by default**. Provide permission functions to give access to your users.
+Routes are *protected by default*. Provide permission functions to give access to your users.
+
+File: `unicorn.resource.js`
 
 ```js
 unicornResource.get('findGreenUnicorns')
@@ -167,9 +152,11 @@ unicornResource.get('findGreenUnicorns')
   });
 ```
 
-### Logic and Hooks
+### Logic & Hooks
 
 Provide hooks to your endpoints which will run before and after the main handler. There is also a helpful `context` object which you can use to assign data to access throughout your function chain.
+
+File: `unicorn.resource.js`
 
 ```js
 unicornResource.get('findGreenUnicorns')
@@ -182,6 +169,8 @@ unicornResource.get('findGreenUnicorns')
 ```
 
 You can also use old express middleware too. When added, these will run before all the other functions.
+
+File: `unicorn.resource.js`
 
 ```js
 unicornResource.get('findGreenUnicorns')

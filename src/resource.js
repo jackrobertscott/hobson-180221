@@ -100,6 +100,8 @@ module.exports = class Resource {
 
   /**
    * Set some options on a resource.
+   *
+   * @param {object} option an object with key/value pairs to set as options.
    */
   option(option = {}) {
     this.options = Object.assign({}, option, this.options);
@@ -156,6 +158,8 @@ module.exports = class Resource {
 
   /**
    * Attach the resources routes to an express app.
+   *
+   * @param {function} app the express app instance.
    */
   attach(app) {
     if (app && typeof app.use === 'function') {
