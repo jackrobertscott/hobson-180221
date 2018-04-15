@@ -1,9 +1,9 @@
 const { expect } = require('chai');
 const HTTPStatus = require('http-status');
-const mongoose = require('mongoose');
 const faker = require('faker');
 const userResource = require('./user/user.resource');
 const User = require('./user/user.model');
+const hobson = require('../lib/index');
 const { createUserToken } = require('../lib/utils/auth');
 const { server, secret } = require('./common');
 
@@ -29,7 +29,7 @@ describe('User resource', () => {
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
     const auth = await createUserToken({
-      Token: mongoose.model('Token'),
+      Token: hobson.model('Token'),
       user: users[0],
       secret,
     });
