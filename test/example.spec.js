@@ -28,8 +28,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('environment', 'test');
     }));
 
@@ -38,8 +38,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(2);
     }));
 
@@ -48,8 +48,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(1);
     }));
 
@@ -58,8 +58,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(2);
       expect(data.examples[0]).to.have.property('comments', 5);
     }));
@@ -69,8 +69,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(1);
       expect(data.examples[0]).to.have.property('comments', 10);
     }));
@@ -80,8 +80,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.examples).to.have.lengthOf(1);
     }));
 
@@ -90,8 +90,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('count', 2);
     }));
 
@@ -100,8 +100,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('count', 1);
     }));
 
@@ -110,8 +110,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('title');
     }));
 
@@ -120,8 +120,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('title', 'Example title two.');
     }));
 
@@ -130,8 +130,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 5);
       expect(data.example).to.have.property('title');
     }));
@@ -141,8 +141,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 5);
       expect(data.example).to.not.have.property('title');
     }));
@@ -156,8 +156,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 15);
     }));
 
@@ -167,8 +167,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.BAD_REQUEST)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(data.title).to.have.property('kind', 'required');
     }));
 
@@ -180,8 +180,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 25);
     }));
 
@@ -190,8 +190,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.equal(null);
     })
     .then(async () => {
@@ -204,8 +204,8 @@ describe('Standard resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.attach).to.equal('hello');
     }));
 

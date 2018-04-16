@@ -16,14 +16,14 @@ module.exports.login = function login({ Token, secret } = {}) {
     if (!user) {
       throw new errors.Response({
         message: 'No user was found for the given email.',
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
     }
     const match = await user.comparePassword(password);
     if (!match) {
       throw new errors.Response({
         message: 'Password is incorrect.',
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
       });
     }
     const auth = await createUserToken({ Token, user, secret });
@@ -50,7 +50,7 @@ module.exports.register = function register({ Token, secret } = {}) {
     if (existing) {
       throw new errors.Response({
         message: 'User already exists with this email.',
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
     }
     const user = await Model.create(body);
@@ -89,7 +89,7 @@ module.exports.changePassword = function changePassword() {
     if (!oldPassword || !newPassword) {
       const error = new errors.Response({
         message: 'There was an error changing password.',
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
         data: {},
       });
       if (!oldPassword) error.data.oldPassword = { message: 'The old password field is required.' };
@@ -101,7 +101,7 @@ module.exports.changePassword = function changePassword() {
     if (!match) {
       throw new errors.Response({
         message: 'Current password is incorrect.',
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
       });
     }
     await Object.assign(patch, { password: newPassword }).save();
@@ -122,7 +122,7 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
     if (!email) {
       throw new errors.Response({
         message: 'There was an error requesting a new password.',
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
         data: {
           email: { message: 'The email field is required.' },
         },
@@ -132,7 +132,7 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
     if (!user) {
       throw new errors.Response({
         message: `No accounts match the email address: ${email}.`,
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
       });
     }
     const auth = await createUserToken({ Token, user, secret, options: { expiresIn: '1h' } });
@@ -149,7 +149,7 @@ module.exports.resetPassword = function resetPassword() {
     if (!email || !newPassword) {
       const error = new errors.Response({
         message: 'There was an error resetting password.',
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
         data: {},
       });
       if (!email) error.data.email = { message: 'The email field is required.' };
@@ -160,13 +160,13 @@ module.exports.resetPassword = function resetPassword() {
     if (!user) {
       throw new errors.Response({
         message: `No accounts match the email address: ${email}.`,
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
       });
     }
     if (auth.payload.userId !== user.id) {
       throw new errors.Response({
         message: `The token does not match the email provided: ${email}.`,
-        code: HTTPStatus.BAD_REQUEST,
+        status: HTTPStatus.BAD_REQUEST,
       });
     }
     await Object.assign(user, { password: newPassword }).save();

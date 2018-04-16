@@ -57,7 +57,7 @@ module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
         } else {
           throw new errors.Response({
             message: 'Token is not active. Please reauthenticate.',
-            code: HTTPStatus.UNAUTHORIZED,
+            status: HTTPStatus.UNAUTHORIZED,
           });
         }
         next();

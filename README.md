@@ -190,8 +190,8 @@ The following standards are inspired by the work done on JSend. See there standa
 
 ```json
 {
-  "status": "success",
-  "code": 200,
+  "status": 200,
+  "code": "success",
   "data": {
     "unicorns": [
       {
@@ -211,8 +211,8 @@ The following standards are inspired by the work done on JSend. See there standa
 
 ```json
 {
-  "status": "fail",
-  "code": 400,
+  "status": 400,
+  "code": "fail",
   "message": "There was a validation error.",
   "data": {
     "title": {
@@ -234,8 +234,8 @@ The following standards are inspired by the work done on JSend. See there standa
 
 ```json
 {
-  "status": "error",
-  "code": 500,
+  "status": 500,
+  "code": "error",
   "message": "The server pooped itself.",
 }
 ```

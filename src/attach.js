@@ -22,12 +22,12 @@ function catchErrors(app, debug) {
     .use((req, res, next) => {
       const error = new errors.Response({
         message: 'Request address does not exist on the api.',
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
       next(error);
     })
     .use((err, req, res, next) => {
-      res.status(err.code || HTTPStatus.INTERNAL_SERVER_ERROR)
+      res.status(err.status || HTTPStatus.INTERNAL_SERVER_ERROR)
         .json(formatResponse(err, debug));
       next();
     });
@@ -43,7 +43,7 @@ function environmentCheck(app) {
     },
   });
   app.get('/', (req, res) => {
-    res.status(response.code)
+    res.status(response.status || HTTPStatus.INTERNAL_SERVER_ERROR)
       .json(response);
   });
 }

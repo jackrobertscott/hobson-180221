@@ -66,7 +66,7 @@ module.exports.findOne = function findOne({ name, safe } = {}) {
     if (!value) {
       throw new errors.Response({
         message: `Model ${name} did not have an item with the given parameters.`,
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
     }
     return {
@@ -92,7 +92,7 @@ module.exports.findById = function findById({ name } = {}) {
     if (!value) {
       throw new errors.Response({
         message: `Model ${name} did not have an item with the id "${id}".`,
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
     }
     return {
@@ -133,7 +133,7 @@ module.exports.update = function update({ name } = {}) {
     if (!value) {
       throw new errors.Response({
         message: `Model ${name} did not have an item with the id "${id}".`,
-        code: HTTPStatus.NOT_FOUND,
+        status: HTTPStatus.NOT_FOUND,
       });
     }
     await Object.assign(value, body).save();
@@ -158,7 +158,7 @@ module.exports.remove = function remove({ name, safe, timestamps } = {}) {
       if (!value) {
         throw new errors.Response({
           message: `Model ${name} did not have an item with the id "${id}".`,
-          code: HTTPStatus.NOT_FOUND,
+          status: HTTPStatus.NOT_FOUND,
         });
       }
       const body = { deleted: true };

@@ -1,23 +1,21 @@
 const HTTPStatus = require('http-status');
+const { expect } = require('./utils/helpers');
 
 module.exports.Response = class Response extends Error {
 
-  constructor({ message, code = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
-    if (message && typeof message !== 'string') {
-      throw new Error('Expected "message" parameter passed to new errors.Response() to be a string.');
-    }
-    if (code && typeof code !== 'number') {
-      throw new Error('Expected "code" parameter passed to new errors.Response() to be a number.');
-    }
-    let status;
-    if (code >= 500 && code < 600) {
-      status = 'error';
-    } else if (code >= 400 && code < 500) {
-      status = 'fail';
+  constructor({ message, status = HTTPStatus.INTERNAL_SERVER_ERROR, data } = {}) {
+    expect({ name: 'message', value: message, type: 'string' });
+    expect({ name: 'status', value: status, type: 'number' });
+    expect({ name: 'data', value: data, type: 'object', optional: true });
+    let code;
+    if (status >= 500 && status < 600) {
+      code = 'error';
+    } else if (status >= 400 && status < 500) {
+      code = 'fail';
     } else {
-      throw new Error('Expected "code" parameter passed to createError() to be between 400 and 600.');
+      throw new Error(`Expected "status" parameter to be a number between 400 and 600 but got ${status}.`);
     }
-    super(message || 'Error has occurred on the server.');
+    super(message || `Error has occurred with status ${status || 'unknown'}.`);
     this.status = status;
     this.code = code;
     if (data) {

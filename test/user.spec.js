@@ -54,8 +54,8 @@ describe('User resource', () => {
     .set('Authorization', userToken)
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('user');
       expect(data.user).to.have.property('email');
       expect(data.user).to.have.property('firstName');
@@ -83,8 +83,8 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data.user).to.have.property('email');
       expect(data.auth).to.have.property('token');
     }));
@@ -97,8 +97,8 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.BAD_REQUEST)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(data).to.have.property('password');
     }));
 
@@ -111,8 +111,8 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.OK)
     .expect(({ body: { data, status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('auth');
       expect(data.auth).to.have.property('token');
     }));
@@ -121,8 +121,8 @@ describe('User resource', () => {
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.UNAUTHORIZED);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.UNAUTHORIZED);
     }));
 
   it('should correctly authenticate a user', () => server.get('/users/check')
@@ -130,8 +130,8 @@ describe('User resource', () => {
     .set('Authorization', userToken)
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(data).to.have.property('working', true);
     }));
 
@@ -144,8 +144,8 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.NOT_FOUND)
     .expect(({ body: { message, status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.NOT_FOUND);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.NOT_FOUND);
       expect(message).to.equal('No user was found for the given email.');
     }));
 
@@ -158,8 +158,8 @@ describe('User resource', () => {
     .expect('Content-Type', /json/)
     .expect(HTTPStatus.BAD_REQUEST)
     .expect(({ body: { message, status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('Password is incorrect.');
     }));
 
@@ -172,8 +172,8 @@ describe('User resource', () => {
     })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, message } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('Current password is incorrect.');
     }));
 
@@ -186,8 +186,8 @@ describe('User resource', () => {
     })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       password = 'coolioMcCool'; // update the testing password too
     }));
 
@@ -196,8 +196,8 @@ describe('User resource', () => {
     .send({})
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, message } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('There was an error requesting a new password.');
     }));
 
@@ -206,8 +206,8 @@ describe('User resource', () => {
     .send({ email: users[0].email })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(Object.keys(data).length).to.equal(0);
     }));
 
@@ -216,8 +216,8 @@ describe('User resource', () => {
     .send({})
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.UNAUTHORIZED);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.UNAUTHORIZED);
     }));
 
   it('should fail to reset a password when missing new password', () => server.post('/users/password/reset')
@@ -226,8 +226,8 @@ describe('User resource', () => {
     .send({ email: users[0].email })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, message, data } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('There was an error resetting password.');
       expect(data).to.have.property('newPassword');
       expect(data).to.not.have.property('email');
@@ -239,8 +239,8 @@ describe('User resource', () => {
     .send({ newPassword: 'otherMcKnow' })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, message, data } }) => {
-      expect(status).to.equal('fail');
-      expect(code).to.equal(HTTPStatus.BAD_REQUEST);
+      expect(code).to.equal('fail');
+      expect(status).to.equal(HTTPStatus.BAD_REQUEST);
       expect(message).to.equal('There was an error resetting password.');
       expect(data).to.have.property('email');
       expect(data).to.not.have.property('newPassword');
@@ -255,8 +255,8 @@ describe('User resource', () => {
     })
     .expect('Content-Type', /json/)
     .expect(({ body: { status, code, data } }) => {
-      expect(status).to.equal('success');
-      expect(code).to.equal(HTTPStatus.OK);
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
       expect(Object.keys(data).length).to.equal(0);
     })
     .then(() => User.findOne({ email: users[0].email }).select('password'))

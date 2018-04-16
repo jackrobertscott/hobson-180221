@@ -33,9 +33,9 @@ module.exports.formatResponse = function formatResponse(response = {}, debug = f
   if (response instanceof Error) {
     const { status, code, data, message, stack } = response;
     const error = {
-      status: status || 'error',
-      code: code || HTTPStatus.INTERNAL_SERVER_ERROR,
-      message: message || 'There was an error on the server.',
+      status: status || HTTPStatus.INTERNAL_SERVER_ERROR,
+      code: code || 'error',
+      message: message || `Error has occurred with status ${status || 'unknown'}.`,
     };
     if (debug && stack) {
       error.stack = stack;
@@ -47,8 +47,8 @@ module.exports.formatResponse = function formatResponse(response = {}, debug = f
   }
   const { status, code, data } = response;
   return {
-    status: status || 'success',
-    code: code || HTTPStatus.OK,
+    status: status || data ? HTTPStatus.OK : HTTPStatus.NO_CONTENT,
+    code: code || 'success',
     data,
   };
 };
@@ -75,7 +75,7 @@ module.exports.middlify = function middlify(middleware, resources, finish = fals
       .then((data) => {
         if (finish) {
           const response = formatResponse({ data });
-          res.status(response.code)
+          res.status(response.status || HTTPStatus.INTERNAL_SERVER_ERROR)
             .json(response);
         } else {
           next();
@@ -99,20 +99,20 @@ module.exports.hookify = function hookify(key, handler, befores, afters) {
       if (e && e.name === 'ValidationError') {
         throw new errors.Response({
           message: e._message || 'Request validation failed.',
-          code: HTTPStatus.BAD_REQUEST,
+          status: HTTPStatus.BAD_REQUEST,
           data: e.errors,
         });
       }
       if (e && e.name === 'MongoError') {
         throw new errors.Response({
           message: e.message || 'Error occurred when working with database.',
-          code: HTTPStatus.BAD_REQUEST,
+          status: HTTPStatus.BAD_REQUEST,
           data: e.errors,
         });
       }
       throw e || new errors.Response({
         message: 'Error occurred on the server.',
-        code: HTTPStatus.INTERNAL_SERVER_ERROR,
+        status: HTTPStatus.INTERNAL_SERVER_ERROR,
       });
     }
     Object.assign(options, { data });
@@ -132,7 +132,7 @@ module.exports.permissionify = function permissionify(key, permissions, defaultO
     if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
       throw new errors.Response({
         message: 'Permission denied to route.',
-        code: HTTPStatus.UNAUTHORIZED,
+        status: HTTPStatus.UNAUTHORIZED,
       });
     }
   };
