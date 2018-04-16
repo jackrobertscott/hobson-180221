@@ -43,6 +43,7 @@ module.exports = class Schema extends mongoose.Schema {
       }
     }
     super(Object.assign(mixins, shape), configuration);
+    this.safe = safe;
   }
 
   /**

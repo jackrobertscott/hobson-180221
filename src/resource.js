@@ -34,22 +34,19 @@ module.exports = class Resource {
     address,
     options = {},
     unsecure = false,
-    safe = true,
   } = {}) {
     expect({ name: 'model', value: model, type: 'function' });
     expect({ name: 'name', value: name, type: 'string', optional: true });
     expect({ name: 'address', value: name, type: 'string', optional: true });
     expect({ name: 'unsecure', value: unsecure, type: 'boolean', optional: true });
-    expect({ name: 'safe', value: safe, type: 'boolean', optional: true });
     expect({ name: 'options', value: options, type: 'object' });
     const nickname = name || model.modelName;
     this.name = camelCase(singular(nickname));
     this.address = address || `/${camelCase(plural(nickname))}`;
     this.model = model;
-    this.options = Object.assign({ name: this.name, safe }, options);
+    this.options = Object.assign({ name: this.name, safe: this.model.safe }, options);
     this.routes = new Map();
     this.unsecure = unsecure;
-    this.safe = safe;
     this.defaults();
   }
 
