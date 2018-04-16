@@ -2,14 +2,14 @@ const express = require('express');
 const HTTPStatus = require('http-status');
 const errors = require('./errors');
 const TokenSchema = require('./token/schema');
-const { formatResponse } = require('./utils/helpers');
+const { formatResponse, expect } = require('./utils/helpers');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
 const UserResource = require('./user/resource');
 
 /**
  * Parse the body of the requests.
  */
-function parseRequest(app) {
+function parseRequestBody(app) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 }
@@ -17,7 +17,7 @@ function parseRequest(app) {
 /**
  * Catch any requests or errors which aren't in the api.
  */
-function catchErrors(app, debug) {
+function handleErrors(app, debug) {
   return app
     .use((req, res, next) => {
       const error = new errors.Response({
@@ -29,7 +29,7 @@ function catchErrors(app, debug) {
     .use((err, req, res, next) => {
       res.status(err.status || HTTPStatus.INTERNAL_SERVER_ERROR)
         .json(formatResponse(err, debug));
-      next();
+      next(err);
     });
 }
 
@@ -49,15 +49,26 @@ function environmentCheck(app) {
 }
 
 /**
- * Connect resources to the express app.
+ * Attach multiple resources to a single app instance and provide authentication.
+ *
+ * @param {function} app the express app instance.
+ * @param {array} resources an array of the hobson resources to attach to the app.
+ * @param {string} secret a unique, random secret string used in authenticating users and tokens.
+ * @param {boolean} status this will add a index route which returns the app environment.
+ * @param {boolean} debug determines if the app should return stack traces in errors.
+ * @param {string} token the token model name if not 'Token' as per default.
+ * @param {function} before a function used to configure the app before attaching resources (not recommended to change).
+ * @param {function} after a function used to configure the app after attaching resources.
  */
 module.exports = function attach({
   app,
   resources,
   secret,
-  parse = true,
+  status = true,
   debug = false,
   token = 'Token',
+  before,
+  after,
 }) {
   if (typeof app !== 'function' || typeof app.use !== 'function') {
     throw new errors.Response({ message: 'Parameter "app" must be an express app instance.' });
@@ -68,8 +79,15 @@ module.exports = function attach({
   if (typeof secret !== 'string') {
     throw new errors.Response({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
   }
-  if (parse) {
-    parseRequest(app, parse);
+  expect({ name: 'status', value: status, type: 'boolean' });
+  expect({ name: 'debug', value: debug, type: 'boolean' });
+  expect({ name: 'token', value: token, type: 'string' });
+  expect({ name: 'before', value: before, type: 'function', optional: true });
+  expect({ name: 'after', value: after, type: 'function', optional: true });
+  if (before) {
+    before(app);
+  } else {
+    parseRequestBody(app);
   }
   const tokenSchema = new TokenSchema();
   const Token = tokenSchema.compile(token);
@@ -80,6 +98,11 @@ module.exports = function attach({
     userResource.option({ Token, secret });
   }
   resources.forEach(resource => resource.attach(app));
-  environmentCheck(app);
-  catchErrors(app, debug);
+  if (status) {
+    environmentCheck(app);
+  }
+  if (after) {
+    after(app);
+  }
+  handleErrors(app, debug);
 };
