@@ -43,7 +43,7 @@ module.exports = class Schema extends mongoose.Schema {
       }
     }
     const structure = Object.assign(mixins, shape);
-    super(structure, configuration);
+    super({ ...structure }, { ...configuration });
     this.context = {
       options: configuration,
       shape: structure,
