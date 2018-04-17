@@ -44,7 +44,7 @@ module.exports = class Resource {
     this.name = camelCase(singular(nickname));
     this.address = address || `/${camelCase(plural(nickname))}`;
     this.model = model;
-    this.options = Object.assign({ name: this.name, safe: this.model.schema.safe }, options);
+    this.options = Object.assign({ name: this.name }, this.model.schema.context.options, options);
     this.routes = new Map();
     this.unsecure = unsecure;
     this.defaults();

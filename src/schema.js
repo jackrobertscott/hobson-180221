@@ -24,7 +24,7 @@ module.exports = class Schema extends mongoose.Schema {
     expect({ name: 'options', value: options, type: 'object' });
     expect({ name: 'timestamps', value: timestamps, type: 'boolean' });
     expect({ name: 'safe', value: safe, type: 'boolean' });
-    const configuration = Object.assign({ timestamps }, options);
+    const configuration = Object.assign({ timestamps, safe }, options);
     const mixins = {};
     if (safe) {
       Object.assign(mixins, {
@@ -42,8 +42,12 @@ module.exports = class Schema extends mongoose.Schema {
         });
       }
     }
-    super(Object.assign(mixins, shape), configuration);
-    this.safe = safe;
+    const structure = Object.assign(mixins, shape);
+    super(structure, configuration);
+    this.context = {
+      options: configuration,
+      shape: structure,
+    };
   }
 
   /**

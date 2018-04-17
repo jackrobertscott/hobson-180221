@@ -195,8 +195,9 @@ describe('Standard resource', () => {
       expect(data.example).to.equal(null);
     })
     .then(async () => {
-      const count = await Example.count({ deleted: false });
-      expect(count).to.equal(2);
+      const items = await Example.find({ deleted: true });
+      expect(items.length).to.equal(1);
+      expect(items[0].toObject()).to.have.property('deletedAt');
     }));
 
   it('should order the resource endpoints correctly', () => server.get('/examples/smacktalk')
