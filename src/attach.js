@@ -29,7 +29,7 @@ function handleErrors(app, debug) {
     .use((err, req, res, next) => {
       res.status(err.status || HTTPStatus.INTERNAL_SERVER_ERROR)
         .json(formatResponse(err, debug));
-      next(err);
+      next();
     });
 }
 
