@@ -49,6 +49,10 @@ module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
       return;
     }
     const token = req.headers.authorization;
+    if (token === 'null' || token === 'undefined') {
+      next();
+      return;
+    }
     const auth = decodeToken(token, secret);
     Token.findById(auth.id)
       .then((issue) => {
