@@ -1,6 +1,4 @@
 const jwt = require('jsonwebtoken');
-const HTTPStatus = require('http-status');
-const errors = require('../errors');
 
 /**
  * Generate an authentication token which can be sent to the client to
@@ -56,13 +54,8 @@ module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
     const auth = decodeToken(token, secret);
     Token.findById(auth.id)
       .then((issue) => {
-        if (issue.active) {
+        if (issue && issue.active) {
           Object.assign(req, { auth: issue });
-        } else {
-          throw new errors.Response({
-            message: 'Token is not active. Please reauthenticate.',
-            status: HTTPStatus.UNAUTHORIZED,
-          });
         }
         next();
       })
