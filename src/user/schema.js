@@ -37,6 +37,9 @@ module.exports = class UserSchema extends Schema {
       }
     });
     this.methods.comparePassword = function comparePassword(candidate) {
+      if (!candidate) {
+        return false;
+      }
       return bcrypt.compare(candidate, this.password);
     };
   }
