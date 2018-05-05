@@ -210,4 +210,14 @@ describe('Standard resource', () => {
       expect(data.attach).to.equal('hello');
     }));
 
+  it('should make sure refining route works', () => server.get('/examples/order')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(HTTPStatus.OK)
+    .expect(({ body: { data, status, code } }) => {
+      expect(code).to.equal('success');
+      expect(status).to.equal(HTTPStatus.OK);
+      expect(data).to.have.property('hello', true);
+    }));
+
 });

@@ -119,6 +119,7 @@ module.exports = class Resource {
     } else {
       this.routes.set(data.id, new Route(data));
     }
+    this.last = data.id;
     return this;
   }
 
@@ -133,6 +134,19 @@ module.exports = class Resource {
       return this.routes.get(id);
     }
     throw new errors.Response({ message: `No route with the id "${id}" was found on the resource.` });
+  }
+
+  /**
+   * Get the last route which was added to the resource.
+   */
+  refine() {
+    if (!this.last) {
+      throw new errors.Response({ message: 'Route muse be added before calling refine().' });
+    }
+    if (!this.routes.has(this.last)) {
+      throw new errors.Response({ message: 'Last route no longer exists on the resource.' });
+    }
+    return this.routes.get(this.last);
   }
 
   /**

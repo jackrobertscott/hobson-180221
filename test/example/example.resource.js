@@ -46,14 +46,13 @@ example.add(niceTalk);
 /**
  * Testing creation of endpoints *with* defining a route instance.
  */
-const orderSort = new Route({
+example.add({
   id: 'orderSort',
   path: '/order',
   method: 'get',
-  open: true,
   handler: () => ({ hello: true }),
-});
-example.add(orderSort);
+}).refine()
+  .access(() => true);
 
 /**
  * Testing middleware works.
