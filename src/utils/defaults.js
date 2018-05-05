@@ -1,6 +1,7 @@
 const HTTPStatus = require('http-status');
 const { plural, singular } = require('pluralize');
 const { expect, checkObjectId } = require('./helpers');
+const { merge } = require('lodash');
 const errors = require('../errors');
 
 /**
@@ -13,7 +14,7 @@ module.exports.find = function find({ name, safe } = {}) {
   return async ({ query: { filter, skip, limit, include, sort, select }, Model }) => {
     let options = {};
     if (safe) options = { deleted: false };
-    const query = Model.find(Object.assign(options, filter || {}));
+    const query = Model.find(merge(options, filter || {}));
     if (include) query.populate(include);
     if (sort) query.sort(sort);
     if (select) query.select(select);
@@ -39,7 +40,7 @@ module.exports.count = function count({ name, safe } = {}) {
   return async ({ query: { filter }, Model }) => {
     let options = {};
     if (safe) options = { deleted: false };
-    const value = await Model.count(Object.assign(options, filter || {}));
+    const value = await Model.count(merge(options, filter || {}));
     if (typeof value !== 'number') {
       throw new errors.Response({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
@@ -59,7 +60,7 @@ module.exports.findOne = function findOne({ name, safe } = {}) {
   return async ({ Model, query: { filter, include, select } }) => {
     let options = {};
     if (safe) options = { deleted: false };
-    const query = Model.findOne(Object.assign(options, filter || {}));
+    const query = Model.findOne(merge(options, filter || {}));
     if (include) query.populate(include);
     if (select) query.select(select);
     const value = await query.exec();
@@ -136,7 +137,7 @@ module.exports.update = function update({ name } = {}) {
         status: HTTPStatus.NOT_FOUND,
       });
     }
-    await Object.assign(value, body).save();
+    await merge(value, body).save();
     return {
       [singular(name)]: value,
     };
@@ -163,7 +164,7 @@ module.exports.remove = function remove({ name, safe, timestamps } = {}) {
       }
       const body = { deleted: true };
       if (timestamps) body.deletedAt = new Date();
-      await Object.assign(value, body).save();
+      await merge(value, body).save();
     } else {
       await Model.findByIdAndRemove(id);
     }

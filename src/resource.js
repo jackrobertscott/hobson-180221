@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { camelCase, lowerCase } = require('change-case');
+const { camelCase, lowerCase } = require('lodash');
 const { plural, singular } = require('pluralize');
 const Route = require('./route');
 const errors = require('./errors');
