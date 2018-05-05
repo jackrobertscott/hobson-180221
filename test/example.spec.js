@@ -159,6 +159,10 @@ describe('Standard resource', () => {
       expect(code).to.equal('success');
       expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 15);
+    })
+    .then(async ({ body: { data } }) => {
+      const example = await Example.findById(data.example._id);
+      expect(example).to.have.property('comments', 15);
     }));
 
   it('should fail because the data is not valid', () => server.post('/examples')
@@ -183,6 +187,10 @@ describe('Standard resource', () => {
       expect(code).to.equal('success');
       expect(status).to.equal(HTTPStatus.OK);
       expect(data.example).to.have.property('comments', 25);
+    })
+    .then(async ({ body: { data } }) => {
+      const example = await Example.findById(data.example._id);
+      expect(example).to.have.property('comments', 25);
     }));
 
   it('should delete an example', () => server.delete(`/examples/${String(examples[1].id)}`)
