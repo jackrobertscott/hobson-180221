@@ -25,3 +25,39 @@ module.exports.Response = class Response extends Error {
   }
 
 };
+
+module.exports.BadResponse = class BadResponse extends module.exports.Response {
+
+  constructor(...args) {
+    super({ ...args, status: HTTPStatus.BAD_REQUEST });
+    Error.captureStackTrace(this, BadResponse);
+  }
+
+};
+
+module.exports.BreakingResponse = class BreakingResponse extends module.exports.Response {
+
+  constructor(...args) {
+    super({ ...args, status: HTTPStatus.INTERNAL_SERVER_ERROR });
+    Error.captureStackTrace(this, BreakingResponse);
+  }
+
+};
+
+module.exports.NotFoundResponse = class NotFoundResponse extends module.exports.Response {
+
+  constructor(...args) {
+    super({ ...args, status: HTTPStatus.NOT_FOUND });
+    Error.captureStackTrace(this, NotFoundResponse);
+  }
+
+};
+
+module.exports.UnauthResponse = class UnauthResponse extends module.exports.Response {
+
+  constructor(...args) {
+    super({ ...args, status: HTTPStatus.UNAUTHORIZED });
+    Error.captureStackTrace(this, UnauthResponse);
+  }
+
+};

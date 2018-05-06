@@ -1,6 +1,5 @@
-const HTTPStatus = require('http-status');
 const { expect } = require('../utils/helpers');
-const errors = require('../errors');
+const { BadResponse, NotFoundResponse, BreakingResponse } = require('../errors');
 const { createUserToken } = require('../utils/auth');
 
 /**
@@ -9,22 +8,16 @@ const { createUserToken } = require('../utils/auth');
 module.exports.login = function login({ Token, secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
   if (!Token) {
-    throw new errors.Response({ message: 'Parameters missing to login function; needs token model' });
+    throw new BreakingResponse({ message: 'Parameters missing to login function; needs token model' });
   }
   return async ({ Model, body: { email, password } }) => {
     const user = await Model.findOne({ email: { $regex: new RegExp(email, 'i') } }).select('password');
     if (!user) {
-      throw new errors.Response({
-        message: 'No user was found for the given email.',
-        status: HTTPStatus.NOT_FOUND,
-      });
+      throw new NotFoundResponse({ message: 'No user was found for the given email.' });
     }
     const match = await user.comparePassword(password);
     if (!match) {
-      throw new errors.Response({
-        message: 'Password is incorrect.',
-        status: HTTPStatus.BAD_REQUEST,
-      });
+      throw new BadResponse({ message: 'Password is incorrect.' });
     }
     const auth = await createUserToken({ Token, user, secret });
     const { payload = {} } = auth;
@@ -43,19 +36,16 @@ module.exports.login = function login({ Token, secret } = {}) {
 module.exports.register = function register({ Token, secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
   if (!Token) {
-    throw new errors.Response({ message: 'Parameters missing to register function; needs token model.' });
+    throw new BreakingResponse({ message: 'Parameters missing to register function; needs token model.' });
   }
   return async ({ Model, body }) => {
     const existing = await Model.findOne({ email: { $regex: new RegExp(body.email, 'i') } });
     if (existing) {
-      throw new errors.Response({
-        message: 'User already exists with this email.',
-        status: HTTPStatus.NOT_FOUND,
-      });
+      throw new BadResponse({ message: 'User already exists with this email.' });
     }
     const user = await Model.create(body);
     if (!user) {
-      throw new errors.Response({ message: 'Error occurred while creating user.' });
+      throw new BreakingResponse({ message: 'Error occurred while creating user.' });
     }
     const auth = await createUserToken({ Token, user, secret });
     const { payload = {} } = auth;
@@ -87,22 +77,15 @@ module.exports.logout = function logout() {
 module.exports.changePassword = function changePassword() {
   return async ({ Model, body: { oldPassword, newPassword }, user }) => {
     if (!oldPassword || !newPassword) {
-      const error = new errors.Response({
-        message: 'There was an error changing password.',
-        status: HTTPStatus.BAD_REQUEST,
-        data: {},
-      });
-      if (!oldPassword) error.data.oldPassword = { message: 'The old password field is required.' };
-      if (!newPassword) error.data.newPassword = { message: 'The new password field is required.' };
-      throw error;
+      const data = {};
+      if (!oldPassword) data.oldPassword = { message: 'The old password field is required.' };
+      if (!newPassword) data.newPassword = { message: 'The new password field is required.' };
+      throw new BadResponse({ message: 'There was an error changing password.', data });
     }
     const patch = await Model.findById(user.id).select('password');
     const match = await patch.comparePassword(oldPassword);
     if (!match) {
-      throw new errors.Response({
-        message: 'Current password is incorrect.',
-        status: HTTPStatus.BAD_REQUEST,
-      });
+      throw new BadResponse({ message: 'Current password is incorrect.' });
     }
     await Object.assign(patch, { password: newPassword }).save();
     delete patch.password;
@@ -116,13 +99,12 @@ module.exports.changePassword = function changePassword() {
 module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
   if (!Token) {
-    throw new errors.Response({ message: 'Parameters missing to forgotPassword function; needs token model.' });
+    throw new BreakingResponse({ message: 'Parameters missing to forgotPassword function; needs token model.' });
   }
   return async ({ Model, body: { email }, context }) => {
     if (!email) {
-      throw new errors.Response({
+      throw new BadResponse({
         message: 'There was an error requesting a new password.',
-        status: HTTPStatus.BAD_REQUEST,
         data: {
           email: { message: 'The email field is required.' },
         },
@@ -130,10 +112,7 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
     }
     const user = await Model.findOne({ email: { $regex: new RegExp(email, 'i') } });
     if (!user) {
-      throw new errors.Response({
-        message: `No accounts match the email address: ${email}.`,
-        status: HTTPStatus.BAD_REQUEST,
-      });
+      throw new BadResponse({ message: `No accounts match the email address: ${email}.` });
     }
     const auth = await createUserToken({ Token, user, secret, options: { expiresIn: '1h' } });
     Object.assign(context, { auth });
@@ -147,27 +126,17 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
 module.exports.resetPassword = function resetPassword() {
   return async ({ Model, auth, body: { email, newPassword } }) => {
     if (!email || !newPassword) {
-      const error = new errors.Response({
-        message: 'There was an error resetting password.',
-        status: HTTPStatus.BAD_REQUEST,
-        data: {},
-      });
-      if (!email) error.data.email = { message: 'The email field is required.' };
-      if (!newPassword) error.data.newPassword = { message: 'The new password field is required.' };
-      throw error;
+      const data = {};
+      if (!email) data.email = { message: 'The email field is required.' };
+      if (!newPassword) data.newPassword = { message: 'The new password field is required.' };
+      throw new BadResponse({ message: 'There was an error resetting password.', data });
     }
     const user = await Model.findOne({ email: { $regex: new RegExp(email, 'i') } }).select('password');
     if (!user) {
-      throw new errors.Response({
-        message: `No accounts match the email address: ${email}.`,
-        status: HTTPStatus.BAD_REQUEST,
-      });
+      throw new BadResponse({ message: `No accounts match the email address: ${email}.` });
     }
     if (auth.payload.userId !== user.id) {
-      throw new errors.Response({
-        message: `The token does not match the email provided: ${email}.`,
-        status: HTTPStatus.BAD_REQUEST,
-      });
+      throw new BadResponse({ message: `The token does not match the email provided: ${email}.` });
     }
     await Object.assign(user, { password: newPassword }).save();
     return {}; // nothing to return...

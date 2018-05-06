@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Schema = require('../schema');
 const { emailRegex } = require('../utils/helpers');
+const { BreakingResponse } = require('../errors');
 
 module.exports = class UserSchema extends Schema {
 
@@ -19,7 +20,6 @@ module.exports = class UserSchema extends Schema {
       },
       password: {
         type: String,
-        required: true,
         select: false,
       },
     });
@@ -37,6 +37,9 @@ module.exports = class UserSchema extends Schema {
       }
     });
     this.methods.comparePassword = function comparePassword(candidate) {
+      if (!this.password) {
+        throw new BreakingResponse({ message: 'User has not been configured with a password.' });
+      }
       if (!candidate) {
         return false;
       }
