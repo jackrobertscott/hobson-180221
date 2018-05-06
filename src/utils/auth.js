@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { singular } = require('pluralize');
 const Token = require('../token/model');
 
 /**
@@ -76,7 +77,8 @@ module.exports.authPopulate = function authPopulate({ User }) {
     if (req.auth && User) {
       User.findById(req.auth.payload.userId)
         .then((user) => {
-          req.user = user;
+          const name = singular(User.collection.name) || 'user';
+          req[name] = user;
           next();
         })
         .catch(next);

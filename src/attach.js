@@ -85,11 +85,11 @@ module.exports = function attach({
     parseRequestBody(app);
   }
   app.use(tokenPopulate({ secret }));
-  const userResource = resources.find(resource => resource instanceof UserResource);
-  if (userResource) {
-    app.use(authPopulate({ User: userResource.model, secret }));
-    userResource.option({ secret });
-  }
+  resources.filter(source => source instanceof UserResource)
+    .forEach((source) => {
+      app.use(authPopulate({ User: source.model, secret }));
+      source.option({ secret });
+    });
   resources.forEach(resource => resource.attach(app));
   if (status) {
     environmentCheck(app);
