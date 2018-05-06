@@ -1,7 +1,7 @@
 const { plural, singular } = require('pluralize');
 const { expect, checkObjectId } = require('./helpers');
 const { merge } = require('lodash');
-const { BreakingResponse, NotFoundResponse } = require('../errors');
+const errors = require('../errors');
 
 /**
  * Find many items in the database.
@@ -21,7 +21,7 @@ module.exports.find = function find({ name, safe } = {}) {
     if (limit) query.limit(Number(limit));
     const value = await query.exec();
     if (!value) {
-      throw new BreakingResponse({ message: `Error occurred when attempting to query the "${name}" model.` });
+      throw new errors.BreakingResponse({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
     return {
       [plural(name)]: value,
@@ -41,7 +41,7 @@ module.exports.count = function count({ name, safe } = {}) {
     if (safe) options = { deleted: false };
     const value = await Model.count(merge(options, filter || {}));
     if (typeof value !== 'number') {
-      throw new BreakingResponse({ message: `Error occurred when attempting to query the "${name}" model.` });
+      throw new errors.BreakingResponse({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
     return {
       count: value,
@@ -64,7 +64,7 @@ module.exports.findOne = function findOne({ name, safe } = {}) {
     if (select) query.select(select);
     const value = await query.exec();
     if (!value) {
-      throw new NotFoundResponse({ message: `Model ${name} did not have an item with the given parameters.` });
+      throw new errors.NotFoundResponse({ message: `Model ${name} did not have an item with the given parameters.` });
     }
     return {
       [singular(name)]: value,
@@ -87,7 +87,7 @@ module.exports.findById = function findById({ name } = {}) {
     if (select) query.select(select);
     const value = await query.exec();
     if (!value) {
-      throw new NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
+      throw new errors.NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
     }
     return {
       [singular(name)]: value,
@@ -105,7 +105,7 @@ module.exports.create = function create({ name } = {}) {
   return async ({ body, Model }) => {
     const value = await Model.create(body);
     if (!value) {
-      throw new BreakingResponse({ message: `Error occurred creating an item for "${name}" model.` });
+      throw new errors.BreakingResponse({ message: `Error occurred creating an item for "${name}" model.` });
     }
     return {
       [singular(name)]: value,
@@ -125,7 +125,7 @@ module.exports.update = function update({ name } = {}) {
     checkObjectId(id);
     const value = await Model.findById(id);
     if (!value) {
-      throw new NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
+      throw new errors.NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
     }
     await merge(value, body).save();
     return {
@@ -147,7 +147,7 @@ module.exports.remove = function remove({ name, safe, timestamps } = {}) {
     if (safe) {
       const value = await Model.findById(id);
       if (!value) {
-        throw new NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
+        throw new errors.NotFoundResponse({ message: `Model ${name} did not have an item with the id "${id}".` });
       }
       const body = { deleted: true };
       if (timestamps) body.deletedAt = new Date();

@@ -1,6 +1,6 @@
 const express = require('express');
 const HTTPStatus = require('http-status');
-const { NotFoundResponse, BreakingResponse } = require('./errors');
+const errors = require('./errors');
 const TokenSchema = require('./token/schema');
 const { formatResponse, expect } = require('./utils/helpers');
 const { authPopulate, tokenPopulate } = require('./utils/auth');
@@ -20,7 +20,7 @@ function parseRequestBody(app) {
 function handleErrors(app, debug) {
   return app
     .use((req, res, next) => {
-      const error = new NotFoundResponse({ message: 'Request address does not exist on the api.' });
+      const error = new errors.NotFoundResponse({ message: 'Request address does not exist on the api.' });
       next(error);
     })
     .use((err, req, res, next) => {
@@ -68,13 +68,13 @@ module.exports = function attach({
   after,
 }) {
   if (typeof app !== 'function' || typeof app.use !== 'function') {
-    throw new BreakingResponse({ message: 'Parameter "app" must be an express app instance.' });
+    throw new errors.BreakingResponse({ message: 'Parameter "app" must be an express app instance.' });
   }
   if (!resources || !Array.isArray(resources)) {
-    throw new BreakingResponse({ message: 'Parameter "resources" must be an array of resources.' });
+    throw new errors.BreakingResponse({ message: 'Parameter "resources" must be an array of resources.' });
   }
   if (typeof secret !== 'string') {
-    throw new BreakingResponse({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
+    throw new errors.BreakingResponse({ message: 'Parameter "secret" must be a random string used to authenticate requests.' });
   }
   expect({ name: 'status', value: status, type: 'boolean' });
   expect({ name: 'debug', value: debug, type: 'boolean' });

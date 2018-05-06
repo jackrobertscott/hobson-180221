@@ -1,6 +1,6 @@
 const { Types } = require('mongoose');
 const HTTPStatus = require('http-status');
-const { BreakingResponse, BadResponse, UnauthResponse } = require('../errors');
+const errors = require('../errors');
 
 /**
  * Check an parameter is a string or throw an error.
@@ -10,10 +10,10 @@ module.exports.expect = function expect({ name, value, type = 'string', optional
     return;
   }
   if (typeof name !== 'string') {
-    throw new BreakingResponse({ message: `Expected value "name" to be of type string but got ${typeof name}.` });
+    throw new errors.BreakingResponse({ message: `Expected value "name" to be of type string but got ${typeof name}.` });
   }
   if (typeof value !== type) {
-    throw new BreakingResponse({ message: `Expected value "${name}" to be of type ${type} but got ${typeof value}.` });
+    throw new errors.BreakingResponse({ message: `Expected value "${name}" to be of type ${type} but got ${typeof value}.` });
   }
 };
 
@@ -22,16 +22,16 @@ module.exports.expect = function expect({ name, value, type = 'string', optional
  */
 module.exports.checkObjectId = function checkObjectId(id) {
   if (!id || !Types.ObjectId.isValid(id)) {
-    throw new BreakingResponse({ message: `Expected value "id" to be a valid ObjectId but got ${id}.` });
+    throw new errors.BreakingResponse({ message: `Expected value "id" to be a valid ObjectId but got ${id}.` });
   }
 };
 
 /**
  * Format response.
  */
-module.exports.formatResponse = function formatResponse(response = {}, debug = false) {
-  if (response instanceof Error) {
-    const { status, code, data, message, stack } = response;
+module.exports.formatResponse = function formatResponse(meta = {}, debug = false) {
+  if (meta instanceof Error) {
+    const { status, code, data, message, stack } = meta;
     const error = {
       status: status || HTTPStatus.INTERNAL_SERVER_ERROR,
       code: code || 'error',
@@ -45,7 +45,7 @@ module.exports.formatResponse = function formatResponse(response = {}, debug = f
     }
     return error;
   }
-  const { status, code, data } = response;
+  const { status, code, data } = meta;
   return {
     status: status || data ? HTTPStatus.OK : HTTPStatus.NO_CONTENT,
     code: code || 'success',
@@ -97,18 +97,18 @@ module.exports.hookify = function hookify(key, handler, befores, afters) {
       data = await handler(options);
     } catch (e) {
       if (e && e.name === 'ValidationError') {
-        throw new BadResponse({
+        throw new errors.BadResponse({
           message: e._message || 'Request validation failed.',
           data: e.errors,
         });
       }
       if (e && e.name === 'MongoError') {
-        throw new BadResponse({
+        throw new errors.BadResponse({
           message: e.message || 'Error occurred when working with database.',
           data: e.errors,
         });
       }
-      throw e || new BreakingResponse({ message: 'Error occurred on the server.' });
+      throw e || new errors.BreakingResponse({ message: 'Error occurred on the server.' });
     }
     Object.assign(options, { data });
     const tasksAfter = afters.map(hook => hook(options));
@@ -125,7 +125,7 @@ module.exports.permissionify = function permissionify(key, permissions, defaultO
     const checks = permissions.map(check => check(...args));
     const status = await Promise.all(checks);
     if ((!defaultOpen && !status.length) || status.length !== status.filter(outcome => Boolean(outcome)).length) {
-      throw new UnauthResponse({ message: 'Permission denied to route.' });
+      throw new errors.UnauthResponse({ message: 'Permission denied to route.' });
     }
   };
 };

@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { camelCase, lowerCase } = require('lodash');
 const { plural, singular } = require('pluralize');
 const Route = require('./route');
-const { BreakingResponse } = require('./errors');
+const errors = require('./errors');
 const {
   expect,
   middlify,
@@ -133,7 +133,7 @@ module.exports = class Resource {
     if (this.routes.has(id)) {
       return this.routes.get(id);
     }
-    throw new BreakingResponse({ message: `No route with the id "${id}" was found on the resource.` });
+    throw new errors.BreakingResponse({ message: `No route with the id "${id}" was found on the resource.` });
   }
 
   /**
@@ -141,10 +141,10 @@ module.exports = class Resource {
    */
   refine() {
     if (!this.last) {
-      throw new BreakingResponse({ message: 'Route muse be added before calling refine().' });
+      throw new errors.BreakingResponse({ message: 'Route muse be added before calling refine().' });
     }
     if (!this.routes.has(this.last)) {
-      throw new BreakingResponse({ message: 'Last route no longer exists on the resource.' });
+      throw new errors.BreakingResponse({ message: 'Last route no longer exists on the resource.' });
     }
     return this.routes.get(this.last);
   }
@@ -179,7 +179,7 @@ module.exports = class Resource {
     if (app && typeof app.use === 'function') {
       return app.use(this.address, this.compile());
     }
-    throw new BreakingResponse({ message: `Expected "app" paramater to be an express app but got ${typeof app}.` });
+    throw new errors.BreakingResponse({ message: `Expected "app" paramater to be an express app but got ${typeof app}.` });
   }
 
 };
