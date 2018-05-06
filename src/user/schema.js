@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
 const Schema = require('../schema');
 const { emailRegex } = require('../utils/helpers');
+const { authPackage } = require('../utils/auth');
 const errors = require('../errors');
+const Token = require('../token/model');
 
 module.exports = class UserSchema extends Schema {
 
@@ -45,6 +47,15 @@ module.exports = class UserSchema extends Schema {
         return false;
       }
       return bcrypt.compare(candidate, this.password);
+    };
+    this.methods.tokenize = function tokenize({ secret, options } = {}) {
+      const item = new Token({});
+      const pack = authPackage({
+        id: item.id,
+        userId: this.id,
+        email: this.email,
+      }, secret, options);
+      return Object.assign(item, pack).save();
     };
   }
 

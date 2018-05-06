@@ -27,6 +27,15 @@ module.exports.checkObjectId = function checkObjectId(id) {
 };
 
 /**
+ * Send a depreciated error.
+ */
+module.exports.depreciated = function depreciated({ name, value } = {}) {
+  if (typeof value !== 'undefined') {
+    throw new errors.BreakingResponse({ message: `The value "${name}" has been depreciated.` });
+  }
+};
+
+/**
  * Format response.
  */
 module.exports.formatResponse = function formatResponse(meta = {}, debug = false) {

@@ -1,15 +1,11 @@
 const { expect } = require('../utils/helpers');
 const errors = require('../errors');
-const { createUserToken } = require('../utils/auth');
 
 /**
  * Login a user with the provided credentials.
  */
-module.exports.login = function login({ Token, secret } = {}) {
+module.exports.login = function login({ secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
-  if (!Token) {
-    throw new errors.BreakingResponse({ message: 'Parameters missing to login function; needs token model' });
-  }
   return async ({ Model, body: { email, password } }) => {
     const user = await Model.findOne({ email: { $regex: new RegExp(email, 'i') } }).select('password');
     if (!user) {
@@ -19,7 +15,7 @@ module.exports.login = function login({ Token, secret } = {}) {
     if (!match) {
       throw new errors.BadResponse({ message: 'Password is incorrect.' });
     }
-    const auth = await createUserToken({ Token, user, secret });
+    const auth = await user.tokenize({ secret });
     const { payload = {} } = auth;
     return {
       auth: {
@@ -33,11 +29,8 @@ module.exports.login = function login({ Token, secret } = {}) {
 /**
  * Register (sign up) a new user.
  */
-module.exports.register = function register({ Token, secret } = {}) {
+module.exports.register = function register({ secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
-  if (!Token) {
-    throw new errors.BreakingResponse({ message: 'Parameters missing to register function; needs token model.' });
-  }
   return async ({ Model, body }) => {
     const existing = await Model.findOne({ email: { $regex: new RegExp(body.email, 'i') } });
     if (existing) {
@@ -47,7 +40,7 @@ module.exports.register = function register({ Token, secret } = {}) {
     if (!user) {
       throw new errors.BreakingResponse({ message: 'Error occurred while creating user.' });
     }
-    const auth = await createUserToken({ Token, user, secret });
+    const auth = await user.tokenize({ secret });
     const { payload = {} } = auth;
     return {
       user,
@@ -108,11 +101,8 @@ module.exports.changePassword = function changePassword() {
 /**
  * Request that a user's password needs to be updated.
  */
-module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) {
+module.exports.forgotPassword = function forgotPassword({ secret } = {}) {
   expect({ name: 'secret', value: secret, type: 'string' });
-  if (!Token) {
-    throw new errors.BreakingResponse({ message: 'Parameters missing to forgotPassword function; needs token model.' });
-  }
   return async ({ Model, body: { email }, context }) => {
     if (!email) {
       throw new errors.BadResponse({
@@ -126,7 +116,7 @@ module.exports.forgotPassword = function forgotPassword({ Token, secret } = {}) 
     if (!user) {
       throw new errors.BadResponse({ message: `No accounts match the email address: ${email}.` });
     }
-    const auth = await createUserToken({ Token, user, secret, options: { expiresIn: '1h' } });
+    const auth = await user.tokenize({ secret, options: { expiresIn: '1h' } });
     Object.assign(context, { auth });
     return {}; // nothing to return...
   };

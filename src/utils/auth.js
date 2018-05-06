@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Token = require('../token/model');
 
 /**
  * Generate an authentication token which can be sent to the client to
@@ -39,7 +40,7 @@ module.exports.authPackage = function authPackage(payload, secret, options) {
 /**
  * Populate a token found on the request.
  */
-module.exports.tokenPopulate = function tokenPopulate({ Token, secret }) {
+module.exports.tokenPopulate = function tokenPopulate({ secret }) {
   const { decodeToken } = module.exports;
   return (req, res, next) => {
     if (!req.headers || !req.headers.authorization) {
@@ -83,18 +84,4 @@ module.exports.authPopulate = function authPopulate({ User }) {
       next();
     }
   };
-};
-
-/**
- * Create and save a token with a user.
- */
-module.exports.createUserToken = async function createUserToken({ Token, user, secret, options } = {}) {
-  const { authPackage } = module.exports;
-  const item = new Token({});
-  const pack = authPackage({
-    id: item.id,
-    userId: user.id,
-    email: user.email,
-  }, secret, options);
-  return Object.assign(item, pack).save();
 };

@@ -3,8 +3,6 @@ const HTTPStatus = require('http-status');
 const faker = require('faker');
 const userResource = require('./user/user.resource');
 const User = require('./user/user.model');
-const hobson = require('../lib/index');
-const { createUserToken } = require('../lib/utils/auth');
 const { server, secret } = require('./common');
 
 describe('User resource', () => {
@@ -28,11 +26,7 @@ describe('User resource', () => {
       lastName: 'Pots',
     }].map(data => User.create(data));
     users = await Promise.all(tasks);
-    const auth = await createUserToken({
-      Token: hobson.model('Token'),
-      user: users[0],
-      secret,
-    });
+    const auth = await users[0].tokenize({ secret });
     userToken = auth.token;
   });
 
