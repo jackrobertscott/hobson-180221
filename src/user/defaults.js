@@ -83,7 +83,7 @@ module.exports.changePassword = function changePassword() {
         throw new errors.BadResponse({
           message: 'There was an error changing password.',
           data: {
-            newPassword: { message: 'The old password field is required.' },
+            oldPassword: { message: 'The old password field is required.' },
           },
         });
       }
