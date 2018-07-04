@@ -39,7 +39,7 @@ module.exports.count = function count({ name, safe } = {}) {
   return async ({ query: { filter }, Model }) => {
     let options = {};
     if (safe) options = { deleted: false };
-    const value = await Model.count(merge(options, filter || {}));
+    const value = await Model.countDocuments(merge(options, filter || {}));
     if (typeof value !== 'number') {
       throw new errors.BreakingResponse({ message: `Error occurred when attempting to query the "${name}" model.` });
     }
