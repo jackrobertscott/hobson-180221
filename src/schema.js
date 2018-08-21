@@ -5,19 +5,13 @@ module.exports = class Schema extends mongoose.Schema {
 
   /**
    * Routes are used as endpoints for an API.
-   *
-   * @param {string} id the id of the route used in referencing it.
-   * @param {string} path the (sub) path of the route.
-   * @param {string} method the method (e.g. get, post, put) of the route.
-   * @param {function} handler the main function of the route.
-   * @param {boolean} open set this route as unprotected by default (not recommended).
    */
   constructor({
     type,
     shape = {},
     options = {},
     timestamps = true,
-    safe = true,
+    safe = false,
   } = {}) {
     expect({ name: 'type', value: type, type: 'string', optional: true });
     expect({ name: 'shape', value: shape, type: 'object' });
